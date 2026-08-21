@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { getAdminSession } from "@/lib/auth";
+import prisma from "@/lib/db/prisma";
+import { requireAdmin } from "@/lib/security/guard";
+
+function isUnauthed(result: unknown): result is NextResponse {
+  return result instanceof NextResponse;
+}
 
 function safeParseItems(json: string | null): any[] {
   if (!json) return [];
@@ -16,6 +20,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
+
   try {
     const { id } = await params;
     const order = await prisma.order.findFirst({
@@ -39,6 +46,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -97,6 +107,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
+
   try {
     const { id } = await params;
     const existing = await prisma.order.findUnique({ where: { id } });

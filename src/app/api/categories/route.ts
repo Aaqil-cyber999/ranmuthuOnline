@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
+import { requireAdmin } from "@/lib/security/guard";
+import { categoryCreateSchema, formatZodError } from "@/lib/security/validation";
+
+function isUnauthed(result: unknown): result is NextResponse {
+  return result instanceof NextResponse;
+}
 
 export async function GET() {
   try {
@@ -15,12 +21,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const { name, description, image, sortOrder, isActive } = await request.json();
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
 
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  try {
+    const parsed = categoryCreateSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
     }
+    const { name, description, image, sortOrder, isActive } = parsed.data;
 
     const slug = slugify(name);
     const existing = await prisma.category.findUnique({ where: { slug } });

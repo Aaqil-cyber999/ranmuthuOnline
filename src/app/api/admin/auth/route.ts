@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import prisma from "@/lib/prisma";
-import { signToken, setAuthCookie, getAdminSession, clearAuthCookie } from "@/lib/auth";
+import prisma from "@/lib/db/prisma";
+import { signToken } from "@/lib/security/jwt";
+import { setAuthCookie, getAdminSession, clearAuthCookie } from "@/lib/security/session";
 
 export async function POST(request: NextRequest) {
   try {

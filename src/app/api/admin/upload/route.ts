@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession } from "@/lib/security/session";
 
 export async function POST(request: NextRequest) {
   try {

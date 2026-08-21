@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
+import { requireAdmin } from "@/lib/security/guard";
+import { categoryUpdateSchema, formatZodError } from "@/lib/security/validation";
+
+function isUnauthed(result: unknown): result is NextResponse {
+  return result instanceof NextResponse;
+}
 
 export async function GET(
   request: NextRequest,
@@ -27,9 +33,16 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
+
   try {
     const { id } = await params;
-    const body = await request.json();
+    const parsed = categoryUpdateSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
+    }
+    const body = parsed.data;
 
     const existing = await prisma.category.findUnique({ where: { id } });
     if (!existing) {
@@ -59,6 +72,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
+
   try {
     const { id } = await params;
 

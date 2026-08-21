@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
+import { requireAdmin } from "@/lib/security/guard";
+import { productUpdateSchema, formatZodError, toNumber, toInt } from "@/lib/security/validation";
+
+function isUnauthed(result: unknown): result is NextResponse {
+  return result instanceof NextResponse;
+}
 
 export async function GET(
   request: NextRequest,
@@ -27,10 +33,16 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
+
   try {
     const { id } = await params;
-    const body = await request.json();
-    const { name, description, price, salePrice, sku, barcode, stock, lowStockThreshold, images, status, isFeatured, categoryId, variants } = body;
+    const parsed = productUpdateSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
+    }
+    const { name, description, price, salePrice, sku, barcode, stock, lowStockThreshold, images, status, isFeatured, categoryId, variants } = parsed.data;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) {
@@ -48,12 +60,12 @@ export async function PUT(
     if (name !== undefined) updateData.name = name;
     if (slug !== existing.slug) updateData.slug = slug;
     if (description !== undefined) updateData.description = description;
-    if (price !== undefined) updateData.price = parseFloat(price);
-    if (salePrice !== undefined) updateData.salePrice = salePrice ? parseFloat(salePrice) : null;
+    if (price !== undefined) updateData.price = toNumber(price);
+    if (salePrice !== undefined) updateData.salePrice = salePrice ? toNumber(salePrice) : null;
     if (sku !== undefined) updateData.sku = sku;
     if (barcode !== undefined) updateData.barcode = barcode;
-    if (stock !== undefined) updateData.stock = parseInt(stock);
-    if (lowStockThreshold !== undefined) updateData.lowStockThreshold = parseInt(lowStockThreshold);
+    if (stock !== undefined) updateData.stock = toInt(stock);
+    if (lowStockThreshold !== undefined) updateData.lowStockThreshold = toInt(lowStockThreshold, 5);
     if (images !== undefined) updateData.images = JSON.stringify(images);
     if (status !== undefined) updateData.status = status;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
@@ -66,8 +78,8 @@ export async function PUT(
           data: variants.map((v: any) => ({
             name: v.name,
             value: v.value,
-            price: v.price ? parseFloat(v.price) : null,
-            stock: parseInt(v.stock || "0"),
+            price: v.price ? toNumber(v.price) : null,
+            stock: toInt(v.stock),
             sku: v.sku || null,
             productId: id,
           })),
@@ -91,6 +103,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
+
   try {
     const { id } = await params;
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { getAdminSession } from "@/lib/auth";
+import prisma from "@/lib/db/prisma";
+import { getAdminSession } from "@/lib/security/session";
 
 export async function GET() {
   try {

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/db/prisma";
 import { generateOrderNumber } from "@/lib/utils";
 import { sendWhatsAppOrder } from "@/lib/whatsapp";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession } from "@/lib/security/session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     let subtotal = 0;
-    const orderItemsData = [];
+    const orderItemsData: { productId: string; quantity: number; price: number; variant: string | null }[] = [];
 
     for (const item of items) {
       const product = await prisma.product.findUnique({ where: { id: item.productId } });

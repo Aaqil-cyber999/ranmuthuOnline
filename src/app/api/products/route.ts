@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
+import { requireAdmin } from "@/lib/security/guard";
+import { productCreateSchema, formatZodError, toNumber, toInt } from "@/lib/security/validation";
+
+function isUnauthed(result: unknown): result is NextResponse {
+  return result instanceof NextResponse;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -77,13 +83,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { name, description, price, salePrice, sku, barcode, stock, lowStockThreshold, images, status, isFeatured, categoryId, variants } = body;
+  const auth = await requireAdmin();
+  if (isUnauthed(auth)) return auth;
 
-    if (!name || price === undefined) {
-      return NextResponse.json({ error: "Name and price are required" }, { status: 400 });
+  try {
+    const parsed = productCreateSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
     }
+    const { name, description, price, salePrice, sku, barcode, stock, lowStockThreshold, images, status, isFeatured, categoryId, variants } = parsed.data;
 
     const slug = slugify(name);
     const existing = await prisma.product.findUnique({ where: { slug } });
@@ -94,12 +102,12 @@ export async function POST(request: NextRequest) {
         name,
         slug: uniqueSlug,
         description: description || null,
-        price: parseFloat(price),
-        salePrice: salePrice ? parseFloat(salePrice) : null,
+        price: toNumber(price),
+        salePrice: salePrice ? toNumber(salePrice) : null,
         sku: sku || null,
         barcode: barcode || null,
-        stock: parseInt(stock || "0"),
-        lowStockThreshold: parseInt(lowStockThreshold || "5"),
+        stock: toInt(stock),
+        lowStockThreshold: toInt(lowStockThreshold, 5),
         images: JSON.stringify(images || []),
         status: status || "active",
         isFeatured: isFeatured || false,
@@ -109,8 +117,8 @@ export async function POST(request: NextRequest) {
               create: variants.map((v: any) => ({
                 name: v.name,
                 value: v.value,
-                price: v.price ? parseFloat(v.price) : null,
-                stock: parseInt(v.stock || "0"),
+                price: v.price ? toNumber(v.price) : null,
+                stock: toInt(v.stock),
                 sku: v.sku || null,
               })),
             }
