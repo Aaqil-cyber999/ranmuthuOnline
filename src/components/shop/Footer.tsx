@@ -92,7 +92,7 @@ export default function Footer() {
               </li>
             </ul>
             <a
-              href="https://wa.me/94771234567"
+              href="https://wa.me/94779560026"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all"

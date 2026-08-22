@@ -9,7 +9,7 @@ import { showError } from "@/components/ui/Toast";
 
 const DELIVERY_FEE = 350;
 const FREE_DELIVERY_MIN = 10000;
-const WHATSAPP_PHONE = "94771234567";
+const WHATSAPP_PHONE = "94779560026";
 
 export default function CheckoutPage() {
   const router = useRouter();
