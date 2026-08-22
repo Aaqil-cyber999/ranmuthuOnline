@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -30,25 +30,25 @@ model Category {
 }
 
 model Product {
-  id              String    @id @default(cuid())
-  name            String
-  slug            String    @unique
-  description     String?
-  price           Float
-  salePrice       Float?
-  sku             String?
-  barcode         String?
-  stock           Int       @default(0)
-  lowStockThreshold Int     @default(5)
-  images          String    @default("[]") 
-  status          String    @default("active") // active, draft, archived
-  isFeatured      Boolean   @default(false)
-  categoryId      String?
-  category        Category? @relation(fields: [categoryId], references: [id])
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  orderItems      OrderItem[]
-  variants        ProductVariant[]
+  id                String           @id @default(cuid())
+  name              String
+  slug              String           @unique
+  description       String?
+  price             Float
+  salePrice         Float?
+  sku               String?
+  barcode           String?
+  stock             Int              @default(0)
+  lowStockThreshold Int              @default(5)
+  images            String           @default("[]")
+  status            String           @default("active")
+  isFeatured        Boolean          @default(false)
+  categoryId        String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  orderItems        OrderItem[]
+  category          Category?        @relation(fields: [categoryId], references: [id])
+  variants          ProductVariant[]
 }
 
 model ProductVariant {
@@ -59,9 +59,9 @@ model ProductVariant {
   stock     Int      @default(0)
   sku       String?
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Order {
@@ -71,11 +71,11 @@ model Order {
   customerEmail   String?
   customerPhone   String
   customerAddress String?
-  items           String // JSON string of order items
+  items           String
   subtotal        Float
   deliveryFee     Float       @default(0)
   total           Float
-  status          String      @default("pending") // pending, confirmed, processing, shipped, completed, cancelled
+  status          String      @default("pending")
   notes           String?
   whatsappSent    Boolean     @default(false)
   createdAt       DateTime    @default(now())
@@ -89,8 +89,8 @@ model OrderItem {
   price     Float
   variant   String?
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product @relation(fields: [productId], references: [id])
 }
 
