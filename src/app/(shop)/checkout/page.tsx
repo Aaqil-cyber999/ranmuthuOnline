@@ -17,7 +17,6 @@ export default function CheckoutPage() {
 
   const [form, setForm] = useState({
     name: "",
-    email: "",
     phone: "",
     address: "",
     notes: "",
@@ -55,7 +54,6 @@ export default function CheckoutPage() {
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.phone.trim()) newErrors.phone = "Phone number is required";
     if (!/^\+?[\d\s\-()]{7,15}$/.test(form.phone.trim())) newErrors.phone = "Invalid phone number";
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) newErrors.email = "Invalid email";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -77,7 +75,6 @@ export default function CheckoutPage() {
     lines.push("*👤 Customer:*");
     lines.push(`Name: ${form.name.trim()}`);
     lines.push(`Phone: ${form.phone.trim()}`);
-    if (form.email.trim()) lines.push(`Email: ${form.email.trim()}`);
     if (form.address.trim()) lines.push(`Address: ${form.address.trim()}`);
     if (form.notes.trim()) lines.push(`Notes: ${form.notes.trim()}`);
     return lines.join("\n");
@@ -122,25 +119,14 @@ export default function CheckoutPage() {
                     {errors.name && <p className="mt-1.5 text-xs text-red-400">{errors.name}</p>}
                   </div>
 
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="email" className="block text-xs font-medium mb-2" style={{ color: "var(--fg-muted)" }}>Email (Optional)</label>
-                      <input
-                        id="email" name="email" type="email" value={form.email} onChange={handleChange}
-                        className={`input-field ${errors.email ? "!border-red-500/50 !ring-red-500/20" : ""}`}
-                        placeholder="your@email.com"
-                      />
-                      {errors.email && <p className="mt-1.5 text-xs text-red-400">{errors.email}</p>}
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className="block text-xs font-medium mb-2" style={{ color: "var(--fg-muted)" }}>Phone Number *</label>
-                      <input
-                        id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange}
-                        className={`input-field ${errors.phone ? "!border-red-500/50 !ring-red-500/20" : ""}`}
-                        placeholder="+94 XX XXX XXXX"
-                      />
-                      {errors.phone && <p className="mt-1.5 text-xs text-red-400">{errors.phone}</p>}
-                    </div>
+                  <div>
+                    <label htmlFor="phone" className="block text-xs font-medium mb-2" style={{ color: "var(--fg-muted)" }}>Phone Number *</label>
+                    <input
+                      id="phone" name="phone" type="tel" value={form.phone} onChange={handleChange}
+                      className={`input-field ${errors.phone ? "!border-red-500/50 !ring-red-500/20" : ""}`}
+                      placeholder="+94 XX XXX XXXX"
+                    />
+                    {errors.phone && <p className="mt-1.5 text-xs text-red-400">{errors.phone}</p>}
                   </div>
 
                   <div>
