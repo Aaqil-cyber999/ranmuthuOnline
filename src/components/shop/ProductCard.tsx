@@ -63,13 +63,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={imageUrl}
             alt={product.name}
             fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 17vw"
+            sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, 17vw"
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
 
           {hasDiscount && (
-            <div className="absolute left-2 top-2 rounded-md bg-red-500 px-2 py-0.5">
-              <span className="text-[10px] font-bold text-white">-{discountPercent}%</span>
+            <div className="absolute left-1 top-1 rounded-md bg-red-500 px-1.5 py-0.5">
+              <span className="text-[9px] font-bold text-white sm:text-[10px]">-{discountPercent}%</span>
             </div>
           )}
 
@@ -93,21 +93,21 @@ export default function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
 
-        <div className="p-3">
+        <div className="p-2 sm:p-3">
           {product.category && (
-            <p className="mb-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand-400/70">
+            <p className="mb-0.5 hidden text-[9px] font-semibold uppercase tracking-wider text-brand-400/70 sm:block">
               {product.category.name}
             </p>
           )}
-          <h3 className="mb-1 text-xs font-medium line-clamp-1 transition-colors"
+          <h3 className="mb-0.5 sm:mb-1 text-[11px] sm:text-xs font-medium line-clamp-1 transition-colors"
             style={{ color: "var(--fg-muted)" }}
           >
             {product.name}
           </h3>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-bold" style={{ color: "var(--fg)" }}>{formatPrice(displayPrice)}</span>
+            <span className="text-xs sm:text-sm font-bold" style={{ color: "var(--fg)" }}>{formatPrice(displayPrice)}</span>
             {hasDiscount && (
-              <span className="text-[10px] line-through" style={{ color: "var(--fg-faint)" }}>{formatPrice(product.price)}</span>
+              <span className="hidden text-[10px] line-through sm:inline" style={{ color: "var(--fg-faint)" }}>{formatPrice(product.price)}</span>
             )}
           </div>
         </div>

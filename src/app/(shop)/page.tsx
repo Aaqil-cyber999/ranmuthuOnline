@@ -274,7 +274,7 @@ function StorefrontContent() {
                 View all
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -434,7 +434,7 @@ function StorefrontContent() {
             {/* Product grid */}
             <div className="flex-1 min-w-0">
               {loading ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:grid-cols-3 lg:grid-cols-6">
                   {Array.from({ length: 12 }).map((_, i) => (
                     <div key={i} className="rounded-xl overflow-hidden">
                       <div className="aspect-[3/4] skeleton" />
@@ -459,7 +459,7 @@ function StorefrontContent() {
                 />
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:grid-cols-3 lg:grid-cols-6">
                     {products.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}

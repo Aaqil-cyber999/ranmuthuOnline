@@ -361,7 +361,7 @@ export default function ProductDetailPage() {
         {relatedProducts.length > 0 && (
           <section className="mt-8 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
             <h2 className="text-sm font-bold mb-3" style={{ color: "var(--fg)" }}>You Might Also Like</h2>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 lg:grid-cols-4">
               {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
