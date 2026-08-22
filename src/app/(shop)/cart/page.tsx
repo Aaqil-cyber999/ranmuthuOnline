@@ -37,15 +37,15 @@ export default function CartPage() {
   return (
     <div className="min-h-screen">
       <div className="border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="mx-auto max-w-7xl section-padding py-10">
-          <h1 className="text-3xl font-bold sm:text-4xl" style={{ color: "var(--fg)" }}>
+        <div className="mx-auto max-w-7xl section-padding py-4">
+          <h1 className="text-2xl font-bold sm:text-4xl" style={{ color: "var(--fg)" }}>
             Shopping Cart
             <span className="ml-3 text-lg font-normal" style={{ color: "var(--fg-muted)" }}>({itemCount} {itemCount === 1 ? "item" : "items"})</span>
           </h1>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl section-padding py-8">
+      <div className="mx-auto max-w-7xl section-padding pt-4 pb-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
