@@ -162,7 +162,7 @@ function StorefrontContent() {
             <div className="absolute top-0 left-1/3 w-[500px] h-[400px] bg-brand-500/8 rounded-full blur-[120px]" />
             <div className="absolute bottom-0 right-1/4 w-[400px] h-[300px] bg-brand-400/5 rounded-full blur-[120px]" />
           </div>
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-3 pb-5 sm:py-10">
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-1.5 pb-5 sm:py-10">
             <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
               {/* Left: Text */}
               <div className="flex-1 max-w-xl">
