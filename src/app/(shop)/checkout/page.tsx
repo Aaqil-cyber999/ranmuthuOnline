@@ -99,13 +99,13 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen">
       <div className="border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="mx-auto max-w-7xl section-padding py-10">
+        <div className="mx-auto max-w-7xl section-padding py-4">
           <h1 className="text-3xl font-bold sm:text-4xl" style={{ color: "var(--fg)" }}>Checkout</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="mx-auto max-w-7xl section-padding py-8">
+        <div className="mx-auto max-w-7xl section-padding pt-6 pb-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Form */}
             <div className="lg:col-span-2">
