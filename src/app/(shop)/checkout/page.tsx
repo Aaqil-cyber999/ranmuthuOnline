@@ -19,7 +19,6 @@ export default function CheckoutPage() {
     name: "",
     phone: "",
     address: "",
-    notes: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -76,7 +75,6 @@ export default function CheckoutPage() {
     lines.push(`Name: ${form.name.trim()}`);
     lines.push(`Phone: ${form.phone.trim()}`);
     if (form.address.trim()) lines.push(`Address: ${form.address.trim()}`);
-    if (form.notes.trim()) lines.push(`Notes: ${form.notes.trim()}`);
     return lines.join("\n");
   };
 
@@ -135,15 +133,6 @@ export default function CheckoutPage() {
                       id="address" name="address" value={form.address} onChange={handleChange} rows={3}
                       className="input-field"
                       placeholder="Enter your delivery address"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="notes" className="block text-xs font-medium mb-2" style={{ color: "var(--fg-muted)" }}>Order Notes (Optional)</label>
-                    <textarea
-                      id="notes" name="notes" value={form.notes} onChange={handleChange} rows={2}
-                      className="input-field"
-                      placeholder="Any special instructions?"
                     />
                   </div>
                 </div>
