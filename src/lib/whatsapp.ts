@@ -50,8 +50,8 @@ function formatWA(amount: number): string {
 }
 
 export async function sendWhatsAppOrder(order: WhatsAppOrderParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const apiUrl = process.env.WATSAPP_API_URL || process.env.WHATSAPP_API_URL;
-  const accessToken = process.env.WATSAPP_ACCESS_TOKEN;
+  const apiUrl = process.env.WHATSAPP_API_URL || process.env.WATSAPP_API_URL;
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN || process.env.WATSAPP_ACCESS_TOKEN;
 
   if (!apiUrl || !accessToken) {
     const message = buildOrderMessage(order);

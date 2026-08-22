@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/security/jwt";
+import { AUTH_COOKIE_NAME, verifyToken } from "./lib/security/jwt";
 
 async function isAuthenticated(request: NextRequest): Promise<boolean> {
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
