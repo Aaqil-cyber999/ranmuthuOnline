@@ -71,7 +71,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl section-padding py-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[0.8fr_1fr]">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[340px_1fr] lg:gap-10">
           <div className="aspect-square skeleton rounded-2xl" />
           <div className="space-y-4">
             <div className="h-4 w-24 skeleton" />
@@ -121,6 +121,12 @@ export default function ProductDetailPage() {
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
+  const handleBuyNow = () => {
+    if (!inStock) return;
+    handleAddToCart();
+    router.push("/checkout");
+  };
+
   return (
     <div className="min-h-screen">
       {/* Breadcrumb */}
@@ -141,12 +147,12 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Product */}
-      <div className="mx-auto max-w-4xl section-padding py-3 lg:py-4">
-        <div className="grid grid-cols-1 gap-4 lg:gap-6 lg:grid-cols-[0.8fr_1fr]">
+      <div className="mx-auto max-w-6xl section-padding pt-4 pb-8 sm:pt-6 sm:pb-10">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[340px_1fr] lg:gap-10">
           {/* Images */}
-          <div className="lg:sticky lg:top-16 lg:self-start">
+          <div>
             <div
-              className="relative aspect-square w-full max-w-[250px] overflow-hidden rounded-lg cursor-zoom-in group"
+              className="relative aspect-square w-full max-w-[250px] mx-auto overflow-hidden rounded-xl cursor-zoom-in group lg:max-w-none lg:mx-0"
               style={{ background: "var(--surface)", borderColor: "var(--border)", borderWidth: 1, borderStyle: "solid" }}
               onClick={() => images.length > 0 && setLightboxOpen(true)}
             >
@@ -155,7 +161,7 @@ export default function ProductDetailPage() {
                   src={images[selectedImage] || images[0]}
                   alt={product.name}
                   fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  sizes="(max-width: 1024px) 250px, 340px"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   priority
                 />
@@ -180,7 +186,7 @@ export default function ProductDetailPage() {
 
             {/* Thumbnails */}
             {images.length > 1 && (
-              <div className="mt-1.5 flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
+              <div className="mt-2.5 flex justify-center gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 lg:justify-start">
                 {images.map((img, i) => (
                   <button
                     key={i}
@@ -202,67 +208,74 @@ export default function ProductDetailPage() {
           {/* Details */}
           <div className="flex flex-col">
             {product.category && (
-              <Link href={`/?category=${product.category.slug}`} className="text-[10px] font-semibold uppercase tracking-widest text-brand-500 hover:text-brand-400 transition-colors mb-1 w-fit">
+              <Link href={`/?category=${product.category.slug}`} className="text-[11px] font-semibold uppercase tracking-widest text-brand-500 hover:text-brand-400 transition-colors mb-2 w-fit">
                 {product.category.name}
               </Link>
             )}
 
-            <h1 className="text-base font-bold sm:text-lg leading-snug" style={{ color: "var(--fg)" }}>
+            <h1 className="text-xl font-bold sm:text-2xl lg:text-3xl leading-snug tracking-tight" style={{ color: "var(--fg)" }}>
               {product.name}
             </h1>
 
             {/* Price */}
-            <div className="mt-1.5 flex items-baseline gap-2 flex-wrap">
-              <span className="text-lg font-extrabold" style={{ color: "var(--fg)" }}>
+            <div className="mt-3 flex items-baseline gap-2.5 flex-wrap">
+              <span className="text-2xl font-extrabold sm:text-3xl tracking-tight" style={{ color: "var(--fg)" }}>
                 {formatPrice(displayPrice)}
               </span>
               {hasDiscount && (
                 <>
-                  <span className="text-xs line-through" style={{ color: "var(--fg-faint)" }}>{formatPrice(product.price)}</span>
-                  <span className="rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] font-bold text-red-500">
-                    Save {formatPrice(product.price - displayPrice!)}
+                  <span className="text-sm line-through" style={{ color: "var(--fg-faint)" }}>{formatPrice(product.price)}</span>
+                  <span className="rounded-md bg-red-500/10 px-2 py-0.5 text-[11px] font-bold text-red-500">
+                    -{discountPercent}% · Save {formatPrice(product.price - displayPrice!)}
                   </span>
                 </>
               )}
             </div>
 
             {/* Stock */}
-            <div className="mt-1.5">
+            <div className="mt-3">
               {inStock ? (
-                <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${lowStock ? "text-amber-500" : "text-emerald-500"}`}>
-                  <span className={`h-1 w-1 rounded-full ${lowStock ? "bg-amber-500" : "bg-emerald-500"}`} />
-                  {lowStock ? `Only ${product.stock} left` : "In Stock"}
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${lowStock ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${lowStock ? "bg-amber-500" : "bg-emerald-500"}`} />
+                  {lowStock ? `Low stock — only ${product.stock} left` : "In Stock"}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-500">
-                  <span className="h-1 w-1 rounded-full bg-red-500" />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-500">
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                   Out of Stock
                 </span>
               )}
             </div>
 
+            {/* Product code */}
+            {(product.sku || product.barcode) && (
+              <p className="mt-3 text-[11px]" style={{ color: "var(--fg-faint)" }}>
+                {product.sku && <>Product Code: <span className="font-medium" style={{ color: "var(--fg-muted)" }}>{product.sku}</span></>}
+                {product.sku && product.barcode && <span className="mx-1.5">·</span>}
+                {product.barcode && <>Barcode: <span className="font-medium" style={{ color: "var(--fg-muted)" }}>{product.barcode}</span></>}
+              </p>
+            )}
+
             {/* Description */}
             {product.description && (
-              <div className="mt-2">
-                <p className="text-[11px] leading-relaxed" style={{ color: "var(--fg-muted)" }}>{product.description}</p>
-              </div>
+              <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--fg-muted)" }}>{product.description}</p>
             )}
 
             {/* Divider */}
-            <div className="mt-2" style={{ borderTop: "1px solid var(--border)" }} />
+            <div className="my-5" style={{ borderTop: "1px solid var(--border)" }} />
 
             {/* Variants */}
             {product.variants && product.variants.length > 0 && (
-              <div className="mt-2">
-                <p className="text-[11px] font-semibold mb-1" style={{ color: "var(--fg)" }}>
-                  {product.variants[0].name}: <span className="font-normal" style={{ color: "var(--fg-muted)" }}>{selectedVariant}</span>
+              <div className="mb-5">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--fg)" }}>
+                  {product.variants[0].name}
                 </p>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-2">
                   {product.variants.map((v) => (
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariant(v.value)}
-                      className={`rounded border px-2 py-0.5 text-[11px] font-medium transition-all duration-150 ${
+                      className={`rounded-lg border px-3.5 py-2 text-xs font-semibold transition-all duration-150 ${
                         selectedVariant === v.value
                           ? "border-brand-500 bg-brand-500/10 text-brand-500"
                           : "hover:border-opacity-60"
@@ -276,32 +289,34 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Quantity & Add to Cart */}
-            <div className="mt-2 space-y-2">
-              <div>
-                <p className="text-[11px] font-semibold mb-1" style={{ color: "var(--fg)" }}>Quantity</p>
-                <div className="inline-flex items-center rounded" style={{ border: "1px solid var(--border)" }}>
+            {/* Quantity & Actions */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--fg)" }}>Quantity</p>
+                <div className="inline-flex items-center rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="flex h-7 w-7 items-center justify-center rounded-l transition-colors"
+                    className="flex h-10 w-10 items-center justify-center transition-colors"
                     style={{ color: "var(--fg-muted)" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--fg)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-muted)"; }}
+                    aria-label="Decrease quantity"
                   >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                       <path strokeLinecap="round" d="M5 12h14" />
                     </svg>
                   </button>
-                  <span className="w-7 text-center text-[11px] font-bold tabular-nums" style={{ color: "var(--fg)", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)" }}>{quantity}</span>
+                  <span className="w-10 text-center text-sm font-bold tabular-nums" style={{ color: "var(--fg)", borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)" }}>{quantity}</span>
                   <button
                     onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
                     disabled={quantity >= product.stock}
-                    className="flex h-7 w-7 items-center justify-center rounded-r transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+                    className="flex h-10 w-10 items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
                     style={{ color: "var(--fg-muted)" }}
                     onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--fg)"; } }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-muted)"; }}
+                    aria-label="Increase quantity"
                   >
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                       <path strokeLinecap="round" d="M12 5v14M5 12h14" />
                     </svg>
                   </button>
@@ -311,18 +326,18 @@ export default function ProductDetailPage() {
               <button
                 onClick={handleAddToCart}
                 disabled={!inStock}
-                className="btn-primary w-full py-2 text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                className="btn-primary w-full py-3.5 rounded-xl text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {addedToCart ? (
-                  <span className="flex items-center justify-center gap-1">
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                     Added to Cart
                   </span>
                 ) : inStock ? (
-                  <span className="flex items-center justify-center gap-1">
-                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
                     </svg>
                     Add to Cart
@@ -332,25 +347,35 @@ export default function ProductDetailPage() {
                 )}
               </button>
 
-              <Link
-                href="/"
-                className="btn-secondary w-full flex items-center justify-center py-1.5 text-xs"
+              <button
+                onClick={handleBuyNow}
+                disabled={!inStock}
+                className="w-full py-3.5 rounded-xl bg-emerald-500 font-semibold text-sm text-white transition-all hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-30 disabled:cursor-not-allowed"
               >
+                Buy Now
+              </button>
+
+              <Link href="/" className="btn-secondary w-full flex items-center justify-center py-3 text-sm rounded-xl">
                 Continue Shopping
               </Link>
             </div>
 
-            {/* Trust badges */}
-            <div className="mt-3 grid grid-cols-2 gap-1.5">
+            {/* Delivery & Service */}
+            <div className="mt-6 pt-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5" style={{ borderTop: "1px solid var(--border)" }}>
               {[
-                { icon: "M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.141-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12", label: "Fast Delivery" },
-                { icon: "M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z", label: "Quality Assured" },
-              ].map((badge) => (
-                <div key={badge.label} className="flex items-center gap-1.5 rounded px-2 py-1.5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-                  <svg className="h-3 w-3 flex-shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d={badge.icon} />
+                { icon: "M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.141-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12", title: "Island-wide Delivery", sub: "Rs 350 · Free over Rs 10,000 · 2–4 days" },
+                { icon: "M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z", title: "Cash on Delivery", sub: "Pay when your order arrives" },
+                { icon: "M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99", title: "7-Day Returns", sub: "Easy exchange or refund" },
+                { icon: "M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155", title: "WhatsApp Support", sub: "077 956 0026" },
+              ].map((item) => (
+                <div key={item.title} className="flex items-start gap-3 rounded-xl px-3.5 py-3" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-500" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                   </svg>
-                  <span className="text-[10px] font-medium" style={{ color: "var(--fg-muted)" }}>{badge.label}</span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold" style={{ color: "var(--fg)" }}>{item.title}</p>
+                    <p className="mt-0.5 text-[11px]" style={{ color: "var(--fg-muted)" }}>{item.sub}</p>
+                  </div>
                 </div>
               ))}
             </div>
