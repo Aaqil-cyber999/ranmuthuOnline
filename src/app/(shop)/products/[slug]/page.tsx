@@ -146,7 +146,7 @@ export default function ProductDetailPage() {
           {/* Images */}
           <div className="lg:sticky lg:top-16 lg:self-start">
             <div
-              className="relative aspect-square w-full max-w-[220px] sm:max-w-[280px] lg:max-w-[320px] overflow-hidden rounded-lg cursor-zoom-in group"
+              className="relative aspect-square w-full max-w-[250px] overflow-hidden rounded-lg cursor-zoom-in group"
               style={{ background: "var(--surface)", borderColor: "var(--border)", borderWidth: 1, borderStyle: "solid" }}
               onClick={() => images.length > 0 && setLightboxOpen(true)}
             >
