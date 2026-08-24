@@ -323,39 +323,48 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <button
-                onClick={handleAddToCart}
-                disabled={!inStock}
-                className="btn-primary w-full py-3.5 rounded-xl text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
-              >
-                {addedToCart ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    Added to Cart
-                  </span>
-                ) : inStock ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
-                    </svg>
-                    Add to Cart
-                  </span>
-                ) : (
-                  "Out of Stock"
-                )}
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!inStock}
+                  className="btn-secondary w-full py-3.5 rounded-xl text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  {addedToCart ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      Added
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
+                      </svg>
+                      Add to Cart
+                    </span>
+                  )}
+                </button>
 
-              <button
-                onClick={handleBuyNow}
-                disabled={!inStock}
-                className="w-full py-3.5 rounded-xl bg-emerald-500 font-semibold text-sm text-white transition-all hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                Buy Now
-              </button>
+                <button
+                  onClick={handleBuyNow}
+                  disabled={!inStock}
+                  className="btn-primary w-full py-3.5 rounded-xl text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  Buy Now
+                </button>
+              </div>
 
-              <Link href="/" className="btn-secondary w-full flex items-center justify-center py-3 text-sm rounded-xl">
+              <Link
+                href="/"
+                className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors"
+                style={{ color: "var(--fg-muted)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--fg)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--fg-muted)"; }}
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
                 Continue Shopping
               </Link>
             </div>
