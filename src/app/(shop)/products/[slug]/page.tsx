@@ -147,7 +147,7 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Product */}
-      <div className="mx-auto max-w-6xl section-padding pt-4 pb-8 sm:pt-6 sm:pb-10">
+      <div className="mx-auto max-w-7xl section-padding pt-4 pb-8 sm:pt-6 sm:pb-10">
         <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[320px_1fr_240px] lg:gap-8">
           {/* Images */}
           <div>
