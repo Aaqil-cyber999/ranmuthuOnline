@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
-import { requireAdmin } from "@/lib/security/guard";
+import { requireAdmin, requirePermission } from "@/lib/security/guard";
 
 function isUnauthed(result: unknown): result is NextResponse {
   return result instanceof NextResponse;
 }
+
+const VALID_STATUSES = ["pending", "confirmed", "processing", "ready", "shipped", "completed", "cancelled"];
+const MAX_NOTES = 1000;
 
 function safeParseItems(json: string | null): any[] {
   if (!json) return [];
@@ -46,7 +49,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("orders:manage");
   if (isUnauthed(auth)) return auth;
 
   try {
@@ -59,8 +62,18 @@ export async function PUT(
     }
 
     const updateData: any = {};
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.notes !== undefined) updateData.notes = body.notes;
+    if (body.status !== undefined) {
+      if (!VALID_STATUSES.includes(body.status)) {
+        return NextResponse.json({ error: "Invalid order status" }, { status: 400 });
+      }
+      updateData.status = body.status;
+    }
+    if (body.notes !== undefined) {
+      if (typeof body.notes !== "string" || body.notes.length > MAX_NOTES) {
+        return NextResponse.json({ error: "Notes are too long" }, { status: 400 });
+      }
+      updateData.notes = body.notes;
+    }
 
     if (body.status && body.status !== existing.status) {
       if (body.status === "confirmed" || body.status === "processing") {
@@ -107,7 +120,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("orders:delete");
   if (isUnauthed(auth)) return auth;
 
   try {

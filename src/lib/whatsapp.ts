@@ -16,6 +16,7 @@ interface WhatsAppOrderParams {
   deliveryFee: number;
   total: number;
   orderNumber: string;
+  trackingNumber?: string;
 }
 
 function buildOrderMessage(order: WhatsAppOrderParams): string {
@@ -39,8 +40,11 @@ function buildOrderMessage(order: WhatsAppOrderParams): string {
   if (order.deliveryFee > 0) {
     msg += `🚚 *Delivery:* ${formatWA(order.deliveryFee)}\n`;
   }
-  msg += `💳 *Total:* ${formatWA(order.total)}\n\n`;
-  msg += `📅 ${new Date().toLocaleString("en-LK")}`;
+  msg += `💳 *Total:* ${formatWA(order.total)}\n`;
+  if (order.trackingNumber) {
+    msg += `🔍 *Tracking Number:* ${order.trackingNumber}\n`;
+  }
+  msg += `\n📅 ${new Date().toLocaleString("en-LK")}`;
 
   return msg;
 }
@@ -57,11 +61,6 @@ export async function sendWhatsAppOrder(order: WhatsAppOrderParams): Promise<{ s
     const message = buildOrderMessage(order);
     const adminNumber = process.env.WHATSAPP_ADMIN_NUMBER || order.customerPhone;
     const waLink = `https://wa.me/${adminNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
-
-    await prisma.order.update({
-      where: { orderNumber: order.orderNumber },
-      data: { whatsappSent: true },
-    }).catch(() => {});
 
     return { success: true, messageId: "fallback-link", error: `WhatsApp link: ${waLink}` };
   }

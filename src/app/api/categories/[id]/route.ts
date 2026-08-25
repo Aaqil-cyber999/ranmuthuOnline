@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
-import { requireAdmin } from "@/lib/security/guard";
+import { requirePermission } from "@/lib/security/guard";
 import { categoryUpdateSchema, formatZodError } from "@/lib/security/validation";
 
 function isUnauthed(result: unknown): result is NextResponse {
@@ -33,7 +33,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("categories:manage");
   if (isUnauthed(auth)) return auth;
 
   try {
@@ -72,7 +72,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("categories:manage");
   if (isUnauthed(auth)) return auth;
 
   try {

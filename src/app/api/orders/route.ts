@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
-import { generateOrderNumber } from "@/lib/utils";
+import { generateOrderNumber, generateTrackingNumber } from "@/lib/utils";
 import { sendWhatsAppOrder } from "@/lib/whatsapp";
-import { getAdminSession } from "@/lib/security/session";
+import { requirePermission } from "@/lib/security/guard";
+import { rateLimit, getClientIp } from "@/lib/security/rateLimit";
+
+const VALID_ORDER_STATUSES = ["pending", "confirmed", "processing", "ready", "shipped", "completed", "cancelled"];
+const MAX_NAME = 100;
+const MAX_PHONE = 20;
+const MAX_EMAIL = 150;
+const MAX_ADDRESS = 500;
+const MAX_NOTES = 1000;
+const MAX_QUANTITY = 99;
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requirePermission("orders:view");
+    if (auth instanceof NextResponse) return auth;
 
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
@@ -23,6 +30,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { orderNumber: { contains: search } },
+        { trackingNumber: { contains: search } },
         { customerName: { contains: search } },
         { customerPhone: { contains: search } },
       ];
@@ -64,6 +72,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const { allowed, response: rlResponse } = rateLimit(`order:${ip}`, { maxRequests: 5, windowMs: 60_000 });
+    if (!allowed) return rlResponse!;
+
     const body = await request.json();
     const { customerName, customerEmail, customerPhone, customerAddress, items, deliveryFee, notes } = body;
 
@@ -72,6 +84,25 @@ export async function POST(request: NextRequest) {
         { error: "Customer name, phone, and at least one item are required" },
         { status: 400 }
       );
+    }
+
+    if (typeof customerName !== "string" || customerName.trim().length < 2 || customerName.length > MAX_NAME) {
+      return NextResponse.json({ error: "Invalid customer name" }, { status: 400 });
+    }
+    if (typeof customerPhone !== "string" || customerPhone.trim().length < 7 || customerPhone.length > MAX_PHONE) {
+      return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
+    }
+    if (customerEmail && (typeof customerEmail !== "string" || customerEmail.length > MAX_EMAIL)) {
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+    }
+    if (customerAddress && (typeof customerAddress !== "string" || customerAddress.length > MAX_ADDRESS)) {
+      return NextResponse.json({ error: "Address is too long" }, { status: 400 });
+    }
+    if (notes && (typeof notes !== "string" || notes.length > MAX_NOTES)) {
+      return NextResponse.json({ error: "Notes are too long" }, { status: 400 });
+    }
+    if (!Array.isArray(items) || items.length > 50) {
+      return NextResponse.json({ error: "Invalid items" }, { status: 400 });
     }
 
     let subtotal = 0;
@@ -87,7 +118,7 @@ export async function POST(request: NextRequest) {
       }
 
       const quantity = parseInt(item.quantity);
-      if (isNaN(quantity) || quantity < 1) {
+      if (isNaN(quantity) || quantity < 1 || quantity > MAX_QUANTITY) {
         return NextResponse.json({ error: `Invalid quantity for ${product.name}` }, { status: 400 });
       }
 
@@ -110,10 +141,24 @@ export async function POST(request: NextRequest) {
     const total = subtotal + (isNaN(deliveryFeeNum) ? 0 : deliveryFeeNum);
     const orderNumber = generateOrderNumber();
 
+    let trackingNumber = "";
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const candidate = generateTrackingNumber();
+      const existing = await prisma.order.findUnique({ where: { trackingNumber: candidate }, select: { id: true } });
+      if (!existing) {
+        trackingNumber = candidate;
+        break;
+      }
+    }
+    if (!trackingNumber) {
+      return NextResponse.json({ error: "Could not generate a unique tracking number. Please try again." }, { status: 500 });
+    }
+
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
+          trackingNumber,
           customerName,
           customerEmail: customerEmail || null,
           customerPhone,
@@ -159,7 +204,15 @@ export async function POST(request: NextRequest) {
       deliveryFee: isNaN(deliveryFeeNum) ? 0 : deliveryFeeNum,
       total,
       orderNumber,
+      trackingNumber,
     });
+
+    if (waResult.messageId && waResult.messageId !== "fallback-link") {
+      await prisma.order.update({
+        where: { orderNumber },
+        data: { whatsappSent: true },
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ order, whatsapp: waResult }, { status: 201 });
   } catch (error) {

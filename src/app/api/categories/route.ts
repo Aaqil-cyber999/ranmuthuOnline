@@ -1,19 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
-import { requireAdmin } from "@/lib/security/guard";
+import { requirePermission } from "@/lib/security/guard";
 import { categoryCreateSchema, formatZodError } from "@/lib/security/validation";
+import { getAdminSession } from "@/lib/security/session";
 
 function isUnauthed(result: unknown): result is NextResponse {
   return result instanceof NextResponse;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-      include: { _count: { select: { products: true } } },
-    });
+    const includeInactive = request.nextUrl.searchParams.get("all") === "true";
+    let categories;
+
+    if (includeInactive) {
+      const session = await getAdminSession();
+      if (!session) {
+        categories = await prisma.category.findMany({
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+          include: { _count: { select: { products: true } } },
+        });
+      } else {
+        categories = await prisma.category.findMany({
+          orderBy: { sortOrder: "asc" },
+          include: { _count: { select: { products: true } } },
+        });
+      }
+    } else {
+      categories = await prisma.category.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: "asc" },
+        include: { _count: { select: { products: true } } },
+      });
+    }
+
     return NextResponse.json({ categories });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
@@ -21,7 +43,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("categories:manage");
   if (isUnauthed(auth)) return auth;
 
   try {

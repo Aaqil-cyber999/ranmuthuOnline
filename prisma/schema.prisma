@@ -12,6 +12,7 @@ model Admin {
   email     String   @unique
   password  String
   name      String   @default("Admin")
+  role      String   @default("STAFF")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -49,6 +50,10 @@ model Product {
   orderItems        OrderItem[]
   category          Category?        @relation(fields: [categoryId], references: [id])
   variants          ProductVariant[]
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([createdAt])
 }
 
 model ProductVariant {
@@ -67,6 +72,7 @@ model ProductVariant {
 model Order {
   id              String      @id @default(cuid())
   orderNumber     String      @unique
+  trackingNumber  String      @unique
   customerName    String
   customerEmail   String?
   customerPhone   String
@@ -81,6 +87,10 @@ model Order {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   orderItems      OrderItem[]
+
+  @@index([customerPhone])
+  @@index([createdAt])
+  @@index([status])
 }
 
 model OrderItem {

@@ -3,9 +3,15 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/db/prisma";
 import { signToken } from "@/lib/security/jwt";
 import { setAuthCookie, getAdminSession, clearAuthCookie } from "@/lib/security/session";
+import { rateLimit, getClientIp } from "@/lib/security/rateLimit";
+import type { AdminRole } from "@/lib/security/permissions";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const { allowed, response: rlResponse } = rateLimit(`login:${ip}`, { maxRequests: 5, windowMs: 15 * 60_000 });
+    if (!allowed) return rlResponse!;
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -22,10 +28,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    const token = await signToken({ id: admin.id, email: admin.email });
+    const token = await signToken({
+      id: admin.id,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role as AdminRole,
+    });
     const response = NextResponse.json({
       success: true,
-      admin: { id: admin.id, email: admin.email, name: admin.name },
+      admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
     });
 
     const cookies = setAuthCookie(token);

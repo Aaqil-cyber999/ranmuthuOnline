@@ -36,7 +36,7 @@ export default function AdminNewProductPage() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const res = await fetch("/api/categories");
+      const res = await fetch("/api/categories?all=true");
       if (res.ok) {
         const data = await res.json();
         setCategories(data.categories || []);

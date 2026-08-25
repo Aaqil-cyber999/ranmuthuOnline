@@ -18,6 +18,7 @@ export default function AdminSettingsPage() {
   const [banners, setBanners] = useState<BannerType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
 
   const [bannerModal, setBannerModal] = useState(false);
   const [editingBanner, setEditingBanner] = useState<BannerType | null>(null);
@@ -38,6 +39,8 @@ export default function AdminSettingsPage() {
           const data = await res.json();
           setSettings(data.settings || {});
           setBanners(data.banners || []);
+        } else if (res.status === 403) {
+          setForbidden(true);
         }
       } catch {
         //
@@ -181,6 +184,20 @@ export default function AdminSettingsPage() {
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
           <LoadingSpinner size="lg" className="text-indigo-600" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (forbidden) {
+    return (
+      <AdminLayout>
+        <div className="flex flex-col items-center justify-center h-64 text-center">
+          <svg className="h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+          <h1 className="text-xl font-bold text-gray-900">Store settings are owner-only</h1>
+          <p className="mt-1 text-sm text-gray-500">Ask the store owner if you need access to this area.</p>
         </div>
       </AdminLayout>
     );

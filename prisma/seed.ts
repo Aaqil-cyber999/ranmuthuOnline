@@ -11,11 +11,28 @@ async function main() {
 
   await prisma.admin.upsert({
     where: { email: process.env.ADMIN_EMAIL || "admin@ranmuthu.com" },
-    update: {},
+    update: { role: "OWNER" },
     create: {
       email: process.env.ADMIN_EMAIL || "admin@ranmuthu.com",
       password: adminPassword,
-      name: "Admin",
+      name: "Store Owner",
+      role: "OWNER",
+    },
+  });
+
+  const staffPassword = await bcrypt.hash(
+    process.env.STAFF_PASSWORD || "staff123",
+    12
+  );
+
+  await prisma.admin.upsert({
+    where: { email: process.env.STAFF_EMAIL || "staff@ranmuthu.com" },
+    update: {},
+    create: {
+      email: process.env.STAFF_EMAIL || "staff@ranmuthu.com",
+      password: staffPassword,
+      name: "Store Staff",
+      role: "STAFF",
     },
   });
 

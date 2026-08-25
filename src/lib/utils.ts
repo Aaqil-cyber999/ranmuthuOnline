@@ -20,6 +20,22 @@ export function generateOrderNumber(): string {
   return `${prefix}-${datePart}-${randomPart}`;
 }
 
+const TRACKING_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+export function generateTrackingNumber(): string {
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let code = "";
+  for (let i = 0; i < 8; i++) {
+    code += TRACKING_CHARS[bytes[i] % TRACKING_CHARS.length];
+  }
+  return `RMX-${code.slice(0, 4)}-${code.slice(4)}`;
+}
+
+export function isValidTrackingFormat(value: string): boolean {
+  return /^RMX-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/.test(value);
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

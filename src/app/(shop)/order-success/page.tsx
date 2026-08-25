@@ -7,6 +7,7 @@ import { Suspense } from "react";
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("order");
+  const trackingNumber = searchParams.get("tracking");
   const whatsappStatus = searchParams.get("whatsapp");
 
   return (
@@ -28,6 +29,22 @@ function OrderSuccessContent() {
           <div className="mt-8 glass-card rounded-2xl p-6">
             <p className="text-xs font-medium mb-1" style={{ color: "var(--fg-muted)" }}>Order Number</p>
             <p className="text-xl font-bold text-brand-400 font-mono">{orderNumber}</p>
+          </div>
+        )}
+
+        {trackingNumber && (
+          <div className="mt-4 glass-card rounded-2xl p-6">
+            <p className="text-xs font-medium mb-1" style={{ color: "var(--fg-muted)" }}>Tracking Number</p>
+            <p className="text-xl font-bold text-brand-400 font-mono tracking-wider">{trackingNumber}</p>
+            <p className="mt-2 text-xs" style={{ color: "var(--fg-muted)" }}>
+              Save this number — use it any time to check your order status.
+            </p>
+            <Link
+              href={`/settings?section=orders&tracking=${encodeURIComponent(trackingNumber)}`}
+              className="btn-secondary mt-4 inline-block w-full py-2.5 text-sm"
+            >
+              Track Your Order
+            </Link>
           </div>
         )}
 

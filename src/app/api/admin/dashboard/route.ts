@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
-import { getAdminSession } from "@/lib/security/session";
+import { requirePermission } from "@/lib/security/guard";
 
 export async function GET() {
   try {
-    const session = await getAdminSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await requirePermission("dashboard:view");
+    if (auth instanceof NextResponse) return auth;
 
     const [
       totalOrders,
@@ -35,8 +33,17 @@ export async function GET() {
     ]);
 
     const revenueResult = await prisma.order.aggregate({
-      where: { status: { in: ["confirmed", "processing", "shipped", "completed"] } },
+      where: { status: { in: ["confirmed", "processing", "ready", "shipped", "completed"] } },
       _sum: { total: true },
+    });
+
+    const ordersByStatusRows = await prisma.order.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    });
+    const ordersByStatus: Record<string, number> = {};
+    ordersByStatusRows.forEach((row) => {
+      ordersByStatus[row.status] = row._count.id;
     });
 
     const lowStockProducts = await prisma.product.findMany({
@@ -57,7 +64,7 @@ export async function GET() {
 
       const result = await prisma.order.aggregate({
         where: {
-          status: { in: ["confirmed", "processing", "shipped", "completed"] },
+          status: { in: ["confirmed", "processing", "ready", "shipped", "completed"] },
           createdAt: { gte: date, lt: nextDate },
         },
         _sum: { total: true },
@@ -79,6 +86,7 @@ export async function GET() {
         completedOrders,
         cancelledOrders,
       },
+      ordersByStatus,
       recentOrders,
       lowStockProducts,
       monthlyRevenue,

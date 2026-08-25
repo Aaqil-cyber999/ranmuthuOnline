@@ -23,12 +23,9 @@ export default function AdminDashboardPage() {
             totalProducts: json.stats.totalProducts,
             totalCustomers: json.stats.totalCustomers,
             recentOrders: json.recentOrders,
-            ordersByStatus: {
-              pending: json.stats.pendingOrders,
-              completed: json.stats.completedOrders,
-              cancelled: json.stats.cancelledOrders,
-            },
+            ordersByStatus: json.ordersByStatus || {},
             monthlyRevenue: json.monthlyRevenue,
+            lowStockProducts: json.lowStockProducts || [],
           });
         }
       } catch {
@@ -135,6 +132,14 @@ export default function AdminDashboardPage() {
               {Object.entries(data.ordersByStatus).map(([status, count]) => {
                 const total = data.totalOrders || 1;
                 const pct = Math.round(((count as number) / total) * 100);
+                const barColor =
+                  status === "pending" ? "bg-yellow-400" :
+                  status === "confirmed" ? "bg-blue-400" :
+                  status === "processing" ? "bg-violet-400" :
+                  status === "ready" ? "bg-cyan-400" :
+                  status === "shipped" ? "bg-sky-400" :
+                  status === "completed" ? "bg-green-500" :
+                  status === "cancelled" ? "bg-red-300" : "bg-gray-400";
                 return (
                   <div key={status}>
                     <div className="flex items-center justify-between mb-1">
@@ -143,13 +148,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="h-2 rounded-full bg-gray-100">
                       <div
-                        className={`h-full rounded-full ${
-                          status === "pending"
-                            ? "bg-yellow-400"
-                            : status === "completed"
-                            ? "bg-green-500"
-                            : "bg-red-400"
-                        }`}
+                        className={`h-full rounded-full ${barColor}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
-import { requireAdmin } from "@/lib/security/guard";
+import { requirePermission } from "@/lib/security/guard";
 import { productCreateSchema, formatZodError, toNumber, toInt } from "@/lib/security/validation";
+import { rateLimit, getClientIp } from "@/lib/security/rateLimit";
 
 function isUnauthed(result: unknown): result is NextResponse {
   return result instanceof NextResponse;
@@ -11,8 +12,8 @@ function isUnauthed(result: unknown): result is NextResponse {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20") || 20));
     const search = searchParams.get("search") || "";
     const category = searchParams.get("category") || "";
     const status = searchParams.get("status") || "";
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get("sort") || "newest";
     const minPrice = searchParams.get("minPrice") || "";
     const maxPrice = searchParams.get("maxPrice") || "";
+    const sale = searchParams.get("sale") || "";
 
     const where: any = {};
 
@@ -43,6 +45,10 @@ export async function GET(request: NextRequest) {
 
     if (featured === "true") {
       where.isFeatured = true;
+    }
+
+    if (sale === "true") {
+      where.salePrice = { not: null };
     }
 
     if (minPrice) where.price = { ...where.price, gte: parseFloat(minPrice) };
@@ -83,7 +89,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("products:manage");
   if (isUnauthed(auth)) return auth;
 
   try {

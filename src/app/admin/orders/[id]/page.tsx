@@ -9,7 +9,7 @@ import { showSuccess, showError } from "@/components/ui/Toast";
 import { parseProductImages } from "@/lib/utils";
 import type { OrderType } from "@/types";
 
-const statuses = ["pending", "confirmed", "processing", "shipped", "completed", "cancelled"];
+const statuses = ["pending", "confirmed", "processing", "ready", "shipped", "completed", "cancelled"];
 
 export default function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -128,6 +128,12 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             <p className="text-sm text-gray-500 mt-1">
               Placed on {new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </p>
+            {order.trackingNumber && (
+              <p className="mt-2 inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 border border-indigo-100">
+                <span className="text-xs font-medium text-indigo-500">Tracking:</span>
+                <span className="font-mono text-sm font-bold text-indigo-700">{order.trackingNumber}</span>
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-3">
             {order.whatsappSent && (

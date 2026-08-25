@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
 import { slugify } from "@/lib/utils";
-import { requireAdmin } from "@/lib/security/guard";
+import { requirePermission } from "@/lib/security/guard";
 import { productUpdateSchema, formatZodError, toNumber, toInt } from "@/lib/security/validation";
 
 function isUnauthed(result: unknown): result is NextResponse {
@@ -15,7 +15,10 @@ export async function GET(
   try {
     const { id } = await params;
     const product = await prisma.product.findFirst({
-      where: { OR: [{ id }, { slug: id }] },
+      where: {
+        OR: [{ id }, { slug: id }],
+        status: "active",
+      },
       include: { category: true, variants: true },
     });
 
@@ -33,7 +36,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("products:manage");
   if (isUnauthed(auth)) return auth;
 
   try {
@@ -99,11 +102,43 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await requirePermission("inventory:manage");
+  if (isUnauthed(auth)) return auth;
+
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const stock = toInt(body.stock);
+
+    if (body.stock === undefined || isNaN(stock) || stock < 0) {
+      return NextResponse.json({ error: "A valid stock quantity is required" }, { status: 400 });
+    }
+
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    const product = await prisma.product.update({
+      where: { id },
+      data: { stock },
+    });
+
+    return NextResponse.json({ product });
+  } catch {
+    return NextResponse.json({ error: "Failed to update stock" }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireAdmin();
+  const auth = await requirePermission("products:manage");
   if (isUnauthed(auth)) return auth;
 
   try {

@@ -5,8 +5,16 @@ import { useRouter } from "next/navigation";
 import AdminSidebar from "./AdminSidebar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
+interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -14,8 +22,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/admin/auth");
+        const res = await fetch("/api/admin/auth", { cache: "no-store" });
         if (res.ok) {
+          const data = await res.json();
+          setAdmin(data.admin);
           setAuthenticated(true);
         } else {
           router.push("/admin/login");
@@ -44,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} role={admin?.role} />
 
       <div className="flex flex-1 flex-col min-w-0">
         <header className="flex items-center h-16 bg-white border-b border-gray-200 px-4 lg:px-6">
@@ -58,8 +68,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
+            <div className="hidden sm:block text-right">
+              <p className="text-sm font-medium text-gray-900 leading-tight">{admin?.name}</p>
+              <p className="text-xs text-gray-500 leading-tight">
+                {admin?.role === "OWNER" ? "Owner" : "Staff"}
+              </p>
+            </div>
             <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-medium">
-              A
+              {admin?.name.charAt(0).toUpperCase() || "A"}
             </div>
           </div>
         </header>

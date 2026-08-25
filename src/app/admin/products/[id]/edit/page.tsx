@@ -43,7 +43,7 @@ export default function AdminEditProductPage({ params }: { params: Promise<{ id:
       try {
         const [prodRes, catRes] = await Promise.all([
           fetch(`/api/products/${id}`),
-          fetch("/api/categories"),
+          fetch("/api/categories?all=true"),
         ]);
 
         if (catRes.ok) {

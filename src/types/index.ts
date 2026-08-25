@@ -63,6 +63,7 @@ export interface CategoryType {
 export interface OrderType {
   id: string;
   orderNumber: string;
+  trackingNumber?: string | null;
   customerName: string;
   customerEmail: string | null;
   customerPhone: string;

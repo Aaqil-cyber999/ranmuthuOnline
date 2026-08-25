@@ -44,7 +44,7 @@ export default function AdminInventoryPage() {
   const handleStockUpdate = async (productId: string, newStock: number) => {
     try {
       const res = await fetch(`/api/products/${productId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stock: String(newStock) }),
       });

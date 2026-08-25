@@ -49,11 +49,12 @@ function StorefrontContent() {
   const sort = searchParams.get("sort") || "newest";
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
+  const sale = searchParams.get("sale") || "";
   const page = parseInt(searchParams.get("page") || "1");
 
   const [searchInput, setSearchInput] = useState(search);
 
-  const isFiltered = Boolean(search || category || minPrice || maxPrice || sort !== "newest");
+  const isFiltered = Boolean(search || category || minPrice || maxPrice || sale || sort !== "newest");
 
   const createQueryString = useCallback(
     (updates: Record<string, string>) => {
@@ -65,7 +66,7 @@ function StorefrontContent() {
           params.delete(key);
         }
       });
-      if (Object.keys(updates).some((k) => ["category", "search", "minPrice", "maxPrice", "sort"].includes(k))) {
+      if (Object.keys(updates).some((k) => ["category", "search", "minPrice", "maxPrice", "sort", "sale"].includes(k))) {
         params.delete("page");
       }
       return params.toString();
@@ -92,6 +93,7 @@ function StorefrontContent() {
         if (sort) params.set("sort", sort);
         if (minPrice) params.set("minPrice", minPrice);
         if (maxPrice) params.set("maxPrice", maxPrice);
+        if (sale) params.set("sale", sale);
         params.set("page", String(page));
         params.set("limit", "24");
 
@@ -112,7 +114,7 @@ function StorefrontContent() {
     }
     load();
     return () => { cancelled = true; };
-  }, [search, category, sort, minPrice, maxPrice, page]);
+  }, [search, category, sort, minPrice, maxPrice, sale, page]);
 
   // Load featured products (only when not filtering)
   useEffect(() => {
@@ -151,7 +153,7 @@ function StorefrontContent() {
     navigate({ search: searchInput });
   };
 
-  const activeFilters = [category, minPrice || maxPrice ? "price" : ""].filter(Boolean);
+  const activeFilters = [category, sale ? "offers" : "", minPrice || maxPrice ? "price" : ""].filter(Boolean);
 
   return (
     <div className="min-h-screen">
@@ -224,7 +226,7 @@ function StorefrontContent() {
 
       {/* ===== CATEGORIES STRIP ===== */}
       {!isFiltered && categories.length > 0 && (
-        <section className="border-b" style={{ borderColor: "var(--border)" }}>
+        <section id="categories" className="border-b" style={{ borderColor: "var(--border)" }}>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1">
               {categories.map((cat) => {
@@ -282,7 +284,7 @@ function StorefrontContent() {
       )}
 
       {/* ===== FULL CATALOGUE ===== */}
-      <section className={isFiltered ? "pt-4" : ""}>
+      <section id="shop" className={isFiltered ? "pt-4" : ""}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           {/* Section header */}
           <div className="mb-6 flex items-center justify-between">
@@ -292,6 +294,8 @@ function StorefrontContent() {
                   ? categories.find((c) => c.slug === category)?.name || "Products"
                   : search
                   ? `Results for "${search}"`
+                  : sale === "true"
+                  ? "Offers & Discounts"
                   : "All Products"}
               </h2>
               <p className="mt-0.5 text-xs" style={{ color: "var(--fg-faint)" }}>

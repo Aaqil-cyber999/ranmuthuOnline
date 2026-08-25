@@ -26,7 +26,7 @@ export default function AdminCategoriesPage() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/categories");
+      const res = await fetch("/api/categories?all=true");
       if (res.ok) {
         const data = await res.json();
         setCategories(data.categories || []);

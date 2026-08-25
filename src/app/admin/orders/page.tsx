@@ -9,7 +9,17 @@ import Pagination from "@/components/ui/Pagination";
 import { showSuccess, showError } from "@/components/ui/Toast";
 import type { OrderType } from "@/types";
 
-const statuses = ["", "pending", "confirmed", "processing", "shipped", "completed", "cancelled"];
+const statuses = ["", "pending", "confirmed", "processing", "ready", "shipped", "completed", "cancelled"];
+
+const statusLabels: Record<string, string> = {
+  pending: "Pending",
+  confirmed: "Confirmed",
+  processing: "Processing",
+  ready: "Ready for Delivery",
+  shipped: "Out for Delivery",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<OrderType[]>([]);
@@ -81,7 +91,7 @@ export default function AdminOrdersPage() {
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search by order #, name, phone..."
+                placeholder="Search by order #, tracking #, name, phone..."
                 className="block w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
@@ -92,7 +102,7 @@ export default function AdminOrdersPage() {
             >
               <option value="">All Status</option>
               {statuses.filter(Boolean).map((s) => (
-                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                <option key={s} value={s}>{statusLabels[s] || s}</option>
               ))}
             </select>
           </div>
@@ -124,6 +134,9 @@ export default function AdminOrdersPage() {
                         <Link href={`/admin/orders/${order.id}`} className="text-indigo-600 hover:underline font-medium">
                           {order.orderNumber}
                         </Link>
+                        {order.trackingNumber && (
+                          <p className="font-mono text-[11px] text-gray-400">{order.trackingNumber}</p>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-gray-900">{order.customerName}</td>
                       <td className="px-4 py-3 text-gray-700">{order.customerPhone}</td>
@@ -136,7 +149,7 @@ export default function AdminOrdersPage() {
                           className="text-xs font-medium rounded-full border-0 bg-transparent focus:ring-0 focus:outline-none cursor-pointer"
                         >
                           {statuses.filter(Boolean).map((s) => (
-                            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                            <option key={s} value={s}>{statusLabels[s] || s}</option>
                           ))}
                         </select>
                       </td>
