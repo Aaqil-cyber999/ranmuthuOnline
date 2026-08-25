@@ -2,6 +2,9 @@
   "name": "ranmuthu-ancy-ecommerce",
   "version": "1.0.0",
   "private": true,
+  "installConfig": {
+    "allowScripts": "@prisma/client @prisma/engines esbuild prisma sharp"
+  },
   "scripts": {
     "dev": "next dev -p 3100",
     "build": "prisma generate && next build",
