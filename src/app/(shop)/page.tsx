@@ -164,7 +164,7 @@ function StorefrontContent() {
             <div className="absolute top-0 left-1/3 w-[500px] h-[400px] bg-brand-500/8 rounded-full blur-[120px]" />
             <div className="absolute bottom-0 right-1/4 w-[400px] h-[300px] bg-brand-400/5 rounded-full blur-[120px]" />
           </div>
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-1.5 pb-5">
+          <div className="relative mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 pt-1.5 pb-5">
             <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
               {/* Left: Text */}
               <div className="flex-1 max-w-xl">
@@ -227,7 +227,7 @@ function StorefrontContent() {
       {/* ===== CATEGORIES STRIP ===== */}
       {!isFiltered && categories.length > 0 && (
         <section id="categories" className="border-b" style={{ borderColor: "var(--border)" }}>
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+          <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1">
               {categories.map((cat) => {
                 const icon = categoryIcons[cat.slug] || categoryIcons.electronics;
@@ -258,7 +258,7 @@ function StorefrontContent() {
       {/* ===== FEATURED PRODUCTS (home only, no filters active) ===== */}
       {!isFiltered && featuredProducts.length > 0 && (
         <section className="border-b" style={{ borderColor: "var(--border)" }}>
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+          <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-10">
             <div className="mb-6 flex items-end justify-between">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-400/70 mb-1">Featured</p>
@@ -285,7 +285,7 @@ function StorefrontContent() {
 
       {/* ===== FULL CATALOGUE ===== */}
       <section id="shop" className={isFiltered ? "pt-4" : ""}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-8">
           {/* Section header */}
           <div className="mb-6 flex items-center justify-between">
             <div>

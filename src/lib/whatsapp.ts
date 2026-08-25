@@ -53,6 +53,12 @@ function formatWA(amount: number): string {
   return `Rs. ${amount.toLocaleString("en-LK")}`;
 }
 
+function buildFallbackLink(order: WhatsAppOrderParams): string {
+  const message = buildOrderMessage(order);
+  const adminNumber = process.env.WHATSAPP_ADMIN_NUMBER || order.customerPhone;
+  return `https://wa.me/${adminNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
+}
+
 export async function sendWhatsAppOrder(order: WhatsAppOrderParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const apiUrl = process.env.WHATSAPP_API_URL || process.env.WATSAPP_API_URL;
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN || process.env.WATSAPP_ACCESS_TOKEN;
@@ -94,9 +100,11 @@ export async function sendWhatsAppOrder(order: WhatsAppOrderParams): Promise<{ s
       return { success: true, messageId: data.messages?.[0]?.id };
     }
 
-    return { success: false, error: data.error?.message || "Failed to send WhatsApp message" };
+    const waLink = buildFallbackLink(order);
+    return { success: false, error: `WhatsApp link: ${waLink}` };
   } catch (error) {
-    return { success: false, error: "Failed to connect to WhatsApp API" };
+    const waLink = buildFallbackLink(order);
+    return { success: false, error: `WhatsApp link: ${waLink}` };
   }
 }
 

@@ -131,7 +131,7 @@ export default function ProductDetailPage() {
     <div className="min-h-screen">
       {/* Breadcrumb */}
       <div className="border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="mx-auto max-w-7xl section-padding py-2">
+        <div className="mx-auto max-w-[1600px] section-padding py-2">
           <nav className="flex items-center gap-1 text-[11px]" style={{ color: "var(--fg-muted)" }}>
             <Link href="/" className="hover:underline underline-offset-2 transition-colors" style={{ color: "var(--fg-faint)" }}>Home</Link>
             <span style={{ color: "var(--fg-faint)" }}>/</span>
@@ -147,7 +147,7 @@ export default function ProductDetailPage() {
       </div>
 
       {/* Product */}
-      <div className="mx-auto max-w-7xl section-padding pt-4 pb-8 sm:pt-6 sm:pb-10">
+      <div className="mx-auto max-w-[1600px] section-padding pt-4 pb-8 sm:pt-6 sm:pb-10">
         <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-[320px_1fr_240px] lg:gap-8">
           {/* Images */}
           <div>

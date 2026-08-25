@@ -107,7 +107,7 @@ export default function Header({ onCartOpen }: HeaderProps) {
         borderColor: scrolled ? "var(--border)" : undefined,
       }}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">

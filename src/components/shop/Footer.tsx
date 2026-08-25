@@ -5,7 +5,7 @@ export default function Footer() {
 
   return (
     <footer className="border-t" style={{ borderColor: "var(--border)", background: "var(--bg)" }}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">

@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
       variant: oi.variant || undefined,
     }));
 
-    const waResult = await sendWhatsAppOrder({
+    sendWhatsAppOrder({
       customerName,
       customerPhone,
       customerAddress: customerAddress || undefined,
@@ -205,16 +205,16 @@ export async function POST(request: NextRequest) {
       total,
       orderNumber,
       trackingNumber,
-    });
+    }).then((waResult) => {
+      if (waResult.messageId && waResult.messageId !== "fallback-link") {
+        prisma.order.update({
+          where: { orderNumber },
+          data: { whatsappSent: true },
+        }).catch(() => {});
+      }
+    }).catch(() => {});
 
-    if (waResult.messageId && waResult.messageId !== "fallback-link") {
-      await prisma.order.update({
-        where: { orderNumber },
-        data: { whatsappSent: true },
-      }).catch(() => {});
-    }
-
-    return NextResponse.json({ order, whatsapp: waResult }, { status: 201 });
+    return NextResponse.json({ order }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }

@@ -17,16 +17,16 @@
   }
 
   .dark {
-    --bg: #000000;
-    --bg-alt: #060606;
-    --surface: rgba(255, 255, 255, 0.04);
-    --surface-alt: rgba(255, 255, 255, 0.06);
-    --fg: #ffffff;
-    --fg-muted: rgba(255, 255, 255, 0.55);
-    --fg-faint: rgba(255, 255, 255, 0.3);
-    --border: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(255, 255, 255, 0.15);
-    --overlay: rgba(0, 0, 0, 0.6);
+    --bg: #0c0c0c;
+    --bg-alt: #111111;
+    --surface: rgba(255, 255, 255, 0.08);
+    --surface-alt: rgba(255, 255, 255, 0.12);
+    --fg: #f0f0f0;
+    --fg-muted: rgba(255, 255, 255, 0.7);
+    --fg-faint: rgba(255, 255, 255, 0.45);
+    --border: rgba(255, 255, 255, 0.14);
+    --border-strong: rgba(255, 255, 255, 0.25);
+    --overlay: rgba(0, 0, 0, 0.65);
   }
 
   * {
@@ -133,9 +133,14 @@
   }
 
   .input-field:focus {
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     background: var(--surface-alt);
+  }
+
+  .dark .input-field:focus {
+    border-color: rgba(96, 165, 250, 0.6);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
   }
 
   .card {

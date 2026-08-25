@@ -195,7 +195,7 @@ export default function SettingsPage() {
     <div className="min-h-screen">
       {/* Page header */}
       <div className="border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="mx-auto max-w-7xl section-padding py-4 sm:py-5">
+        <div className="mx-auto max-w-[1600px] section-padding py-4 sm:py-5">
           <Link
             href="/"
             className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium transition-colors"
@@ -215,7 +215,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl section-padding pt-4 pb-12 sm:pt-6">
+      <div className="mx-auto max-w-[1600px] section-padding pt-4 pb-12 sm:pt-6">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr] lg:gap-8">
           {/* ===== Sidebar ===== */}
           <div className="space-y-5 lg:space-y-6">

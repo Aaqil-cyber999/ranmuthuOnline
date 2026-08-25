@@ -9,6 +9,41 @@ import { showError } from "@/components/ui/Toast";
 
 const DELIVERY_FEE = 350;
 const FREE_DELIVERY_MIN = 10000;
+const ADMIN_WHATSAPP = "+94779560026";
+
+function buildWhatsAppLink(params: {
+  orderNumber: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress?: string;
+  items: { name: string; quantity: number; price: number; variant?: string }[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  trackingNumber: string;
+}): string {
+  const fmt = (n: number) => `Rs. ${n.toLocaleString("en-LK")}`;
+  let msg = `\u{1F6D2} *New Order - ${params.orderNumber}*\n\n`;
+  msg += `\u{1F464} *Customer:* ${params.customerName}\n`;
+  msg += `\u{1F4F1} *Phone:* ${params.customerPhone}\n`;
+  if (params.customerAddress) msg += `\u{1F4CD} *Address:* ${params.customerAddress}\n`;
+  msg += `\n\u{1F4E6} *Items:*\n`;
+  msg += `\u2500`.repeat(30) + "\n";
+  params.items.forEach((item, idx) => {
+    msg += `${idx + 1}. ${item.name}`;
+    if (item.variant) msg += ` (${item.variant})`;
+    msg += `\n   Qty: ${item.quantity} \u00D7 ${fmt(item.price)} = ${fmt(item.quantity * item.price)}\n`;
+  });
+  msg += `\u2500`.repeat(30) + "\n";
+  msg += `\u{1F4B0} *Subtotal:* ${fmt(params.subtotal)}\n`;
+  if (params.deliveryFee > 0) msg += `\u{1F69A} *Delivery:* ${fmt(params.deliveryFee)}\n`;
+  msg += `\u{1F4B3} *Total:* ${fmt(params.total)}\n`;
+  if (params.trackingNumber) msg += `\u{1F50D} *Tracking:* ${params.trackingNumber}\n`;
+  msg += `\n\u{1F4C5} ${new Date().toLocaleString("en-LK")}`;
+
+  const phone = ADMIN_WHATSAPP.replace(/[^0-9]/g, "");
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -21,18 +56,19 @@ export default function CheckoutPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   const subtotal = getSubtotal();
   const deliveryFee = subtotal >= FREE_DELIVERY_MIN ? 0 : DELIVERY_FEE;
   const total = subtotal + deliveryFee;
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !orderPlaced) {
       router.replace("/cart");
     }
-  }, [items.length, router]);
+  }, [items.length, router, orderPlaced]);
 
-  if (items.length === 0) {
+  if (items.length === 0 && !orderPlaced) {
     return null;
   }
 
@@ -86,19 +122,29 @@ export default function CheckoutPage() {
         return;
       }
 
-      const waError: string | undefined = data.whatsapp?.error;
-      const link = typeof waError === "string" && waError.startsWith("WhatsApp link:")
-        ? waError.slice("WhatsApp link:".length).trim()
-        : null;
-      if (link) {
-        window.open(link, "_blank", "noopener,noreferrer");
-      }
+      const waLink = buildWhatsAppLink({
+        orderNumber: data.order.orderNumber,
+        customerName: form.name.trim(),
+        customerPhone: form.phone.trim(),
+        customerAddress: form.address.trim() || undefined,
+        items: items.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          variant: item.variant || undefined,
+        })),
+        subtotal,
+        deliveryFee,
+        total,
+        trackingNumber: data.order.trackingNumber || "",
+      });
 
+      setOrderPlaced(true);
       clearCart();
       router.push(
         `/order-success?order=${encodeURIComponent(data.order.orderNumber)}` +
         `&tracking=${encodeURIComponent(data.order.trackingNumber || "")}` +
-        `&whatsapp=${link ? "opening" : "sent"}`
+        (waLink ? `&wa=${encodeURIComponent(waLink)}` : "")
       );
     } catch {
       showError("Could not place your order. Please check your connection and try again.");
@@ -109,13 +155,13 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen">
       <div className="border-b" style={{ borderColor: "var(--border)" }}>
-        <div className="mx-auto max-w-7xl section-padding py-3 sm:py-4">
+        <div className="mx-auto max-w-[1600px] section-padding py-3 sm:py-4">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl" style={{ color: "var(--fg)" }}>Checkout</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="mx-auto max-w-7xl section-padding pt-4 sm:pt-6 lg:pt-8 pb-8 sm:pb-10">
+        <div className="mx-auto max-w-[1600px] section-padding pt-4 sm:pt-6 lg:pt-8 pb-8 sm:pb-10">
           <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3 lg:gap-8">
             {/* Form */}
             <div className="lg:col-span-2">
