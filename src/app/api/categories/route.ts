@@ -37,8 +37,9 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ categories });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+  } catch (error: any) {
+    console.error("Categories fetch error:", error?.message || error);
+    return NextResponse.json({ error: "Failed to fetch categories", detail: error?.message }, { status: 500 });
   }
 }
 

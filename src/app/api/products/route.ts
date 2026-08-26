@@ -83,8 +83,9 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
+  } catch (error: any) {
+    console.error("Products fetch error:", error?.message || error);
+    return NextResponse.json({ error: "Failed to fetch products", detail: error?.message }, { status: 500 });
   }
 }
 
