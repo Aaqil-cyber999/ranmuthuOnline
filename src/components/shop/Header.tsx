@@ -96,15 +96,12 @@ export default function Header({ onCartOpen }: HeaderProps) {
 
   return (
     <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled
-          ? "backdrop-blur-xl border-b shadow-lg"
-          : "bg-transparent"
-      )}
+      className="fixed top-0 left-0 right-0 z-50"
       style={{
-        backgroundColor: scrolled ? "var(--bg)" : undefined,
-        borderColor: scrolled ? "var(--border)" : undefined,
+        backgroundColor: scrolled ? "var(--bg)" : "var(--bg)",
+        borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
+        boxShadow: scrolled ? "0 4px 20px rgba(0,0,0,0.08)" : "none",
+        transition: "border-color 0.3s, box-shadow 0.3s",
       }}
     >
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
