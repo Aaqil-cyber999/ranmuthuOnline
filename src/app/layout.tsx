@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} light`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col font-sans">
         <script
           dangerouslySetInnerHTML={{
