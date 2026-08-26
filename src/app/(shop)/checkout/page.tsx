@@ -23,11 +23,11 @@ function buildWhatsAppLink(params: {
   trackingNumber: string;
 }): string {
   const fmt = (n: number) => `Rs. ${n.toLocaleString("en-LK")}`;
-  let msg = `\u{1F6D2} *New Order - ${params.orderNumber}*\n\n`;
-  msg += `\u{1F464} *Customer:* ${params.customerName}\n`;
-  msg += `\u{1F4F1} *Phone:* ${params.customerPhone}\n`;
-  if (params.customerAddress) msg += `\u{1F4CD} *Address:* ${params.customerAddress}\n`;
-  msg += `\n\u{1F4E6} *Items:*\n`;
+  let msg = `✅ *New Order - ${params.orderNumber}*\n\n`;
+  msg += `👤 *Name:* ${params.customerName}\n`;
+  msg += `📞 *Phone:* ${params.customerPhone}\n`;
+  if (params.customerAddress) msg += `📍 *Address:* ${params.customerAddress}\n`;
+  msg += `\n📦 *Items:*\n`;
   msg += `\u2500`.repeat(30) + "\n";
   params.items.forEach((item, idx) => {
     msg += `${idx + 1}. ${item.name}`;
@@ -35,11 +35,11 @@ function buildWhatsAppLink(params: {
     msg += `\n   Qty: ${item.quantity} \u00D7 ${fmt(item.price)} = ${fmt(item.quantity * item.price)}\n`;
   });
   msg += `\u2500`.repeat(30) + "\n";
-  msg += `\u{1F4B0} *Subtotal:* ${fmt(params.subtotal)}\n`;
-  if (params.deliveryFee > 0) msg += `\u{1F69A} *Delivery:* ${fmt(params.deliveryFee)}\n`;
-  msg += `\u{1F4B3} *Total:* ${fmt(params.total)}\n`;
-  if (params.trackingNumber) msg += `\u{1F50D} *Tracking:* ${params.trackingNumber}\n`;
-  msg += `\n\u{1F4C5} ${new Date().toLocaleString("en-LK")}`;
+  msg += `💰 *Subtotal:* ${fmt(params.subtotal)}\n`;
+  if (params.deliveryFee > 0) msg += `🚚 *Delivery:* ${fmt(params.deliveryFee)}\n`;
+  msg += `💳 *Total:* ${fmt(params.total)}\n`;
+  if (params.trackingNumber) msg += `🔍 *Tracking:* ${params.trackingNumber}\n`;
+  msg += `\n📅 ${new Date().toLocaleString("en-LK")}`;
 
   const phone = ADMIN_WHATSAPP.replace(/[^0-9]/g, "");
   return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
