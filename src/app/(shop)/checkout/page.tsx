@@ -23,23 +23,23 @@ function buildWhatsAppLink(params: {
   trackingNumber: string;
 }): string {
   const fmt = (n: number) => `Rs. ${n.toLocaleString("en-LK")}`;
-  let msg = `✅ *New Order - ${params.orderNumber}*\n\n`;
-  msg += `👤 *Name:* ${params.customerName}\n`;
-  msg += `📞 *Phone:* ${params.customerPhone}\n`;
-  if (params.customerAddress) msg += `📍 *Address:* ${params.customerAddress}\n`;
-  msg += `\n📦 *Items:*\n`;
-  msg += `\u2500`.repeat(30) + "\n";
+  let msg = `*New Order - ${params.orderNumber}*\n\n`;
+  msg += `*Name:* ${params.customerName}\n`;
+  msg += `*Phone:* ${params.customerPhone}\n`;
+  if (params.customerAddress) msg += `*Address:* ${params.customerAddress}\n`;
+  msg += `\n*Items:*\n`;
+  msg += `-`.repeat(30) + "\n";
   params.items.forEach((item, idx) => {
     msg += `${idx + 1}. ${item.name}`;
     if (item.variant) msg += ` (${item.variant})`;
-    msg += `\n   Qty: ${item.quantity} \u00D7 ${fmt(item.price)} = ${fmt(item.quantity * item.price)}\n`;
+    msg += `\n   Qty: ${item.quantity} x ${fmt(item.price)} = ${fmt(item.quantity * item.price)}\n`;
   });
-  msg += `\u2500`.repeat(30) + "\n";
-  msg += `💰 *Subtotal:* ${fmt(params.subtotal)}\n`;
-  if (params.deliveryFee > 0) msg += `🚚 *Delivery:* ${fmt(params.deliveryFee)}\n`;
-  msg += `💳 *Total:* ${fmt(params.total)}\n`;
-  if (params.trackingNumber) msg += `🔍 *Tracking:* ${params.trackingNumber}\n`;
-  msg += `\n📅 ${new Date().toLocaleString("en-LK")}`;
+  msg += `-`.repeat(30) + "\n";
+  msg += `*Subtotal:* ${fmt(params.subtotal)}\n`;
+  if (params.deliveryFee > 0) msg += `*Delivery:* ${fmt(params.deliveryFee)}\n`;
+  msg += `*Total:* ${fmt(params.total)}\n`;
+  if (params.trackingNumber) msg += `*Tracking:* ${params.trackingNumber}\n`;
+  msg += `\n${new Date().toLocaleString("en-LK")}`;
 
   const phone = ADMIN_WHATSAPP.replace(/[^0-9]/g, "");
   return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
@@ -87,8 +87,13 @@ export default function CheckoutPage() {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
-    if (!form.phone.trim()) newErrors.phone = "Phone number is required";
-    if (!/^\+?[\d\s\-()]{7,15}$/.test(form.phone.trim())) newErrors.phone = "Invalid phone number";
+    if (!form.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else {
+      const digits = form.phone.replace(/[\s\-()]/g, "");
+      const validFormats = /^(\+?94|0)?7\d{8}$/.test(digits);
+      if (!validFormats) newErrors.phone = "Enter a valid Sri Lankan phone number";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
