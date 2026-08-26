@@ -121,34 +121,18 @@ export default function Header({ onCartOpen }: HeaderProps) {
 
           {/* Desktop nav links */}
           <nav className="hidden lg:flex items-center gap-1 ml-6" aria-label="Primary">
-            {NAV_LINKS.map((link) => {
-              const isHash = link.href.includes("#");
-              return (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap"
-                  style={{ color: "var(--fg-muted)" }}
-                  onClick={(e) => {
-                    if (isHash) {
-                      e.preventDefault();
-                      const id = link.href.split("#")[1];
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                      if (id) {
-                        setTimeout(() => {
-                          document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }, 100);
-                      }
-                      window.history.pushState(null, "", link.href);
-                    }
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--fg)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-muted)"; }}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap"
+                style={{ color: "var(--fg-muted)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--fg)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-muted)"; }}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
           {/* Search bar — desktop */}

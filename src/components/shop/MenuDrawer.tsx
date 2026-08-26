@@ -73,27 +73,12 @@ const INFO_ITEMS: MenuItem[] = [
   { label: "FAQ", href: "/settings?section=support", icon: ICONS.faq },
 ];
 
-function Item({ item, onNavigate }: { item: MenuItem; onNavigate?: () => void }) {
-  const isHash = item.href.includes("#");
+function Item({ item }: { item: MenuItem }) {
   return (
     <Link
       href={item.href}
       className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
       style={{ color: "var(--fg-muted)" }}
-      onClick={(e) => {
-        if (isHash) {
-          e.preventDefault();
-          onNavigate?.();
-          const id = item.href.split("#")[1];
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          if (id) {
-            setTimeout(() => {
-              document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }, 100);
-          }
-          window.history.pushState(null, "", item.href);
-        }
-      }}
       onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--fg)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-muted)"; }}
     >
@@ -208,27 +193,27 @@ export default function MenuDrawer({ open, onClose }: { open: boolean; onClose: 
           <SectionLabel>Shop</SectionLabel>
           <div className="space-y-0.5">
             {SHOP_ITEMS.map((item) => (
-              <Item key={item.label} item={item} onNavigate={onClose} />
+              <Item key={item.label} item={item} />
             ))}
           </div>
 
           <SectionLabel>My Account</SectionLabel>
           <div className="space-y-0.5">
             {ACCOUNT_ITEMS.map((item) => (
-              <Item key={item.label} item={item} onNavigate={onClose} />
+              <Item key={item.label} item={item} />
             ))}
           </div>
 
           <SectionLabel>Information</SectionLabel>
           <div className="space-y-0.5">
             {INFO_ITEMS.map((item) => (
-              <Item key={item.label} item={item} onNavigate={onClose} />
+              <Item key={item.label} item={item} />
             ))}
           </div>
 
           <SectionLabel>Settings</SectionLabel>
           <div className="space-y-0.5">
-            <Item item={{ label: "Settings", href: "/settings", icon: ICONS.cog }} onNavigate={onClose} />
+            <Item item={{ label: "Settings", href: "/settings", icon: ICONS.cog }} />
             <div
               className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium"
               style={{ color: "var(--fg-muted)" }}
@@ -315,7 +300,7 @@ export default function MenuDrawer({ open, onClose }: { open: boolean; onClose: 
 
           {/* Help & Support — bottom */}
           <div className="mt-4 border-t px-2 pt-3" style={{ borderColor: "var(--border)" }}>
-            <Item item={{ label: "Help & Support", href: "/settings?section=support", icon: ICONS.chat }} onNavigate={onClose} />
+            <Item item={{ label: "Help & Support", href: "/settings?section=support", icon: ICONS.chat }} />
           </div>
         </nav>
       </aside>
