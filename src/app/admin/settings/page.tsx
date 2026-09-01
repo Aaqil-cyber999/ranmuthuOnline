@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { FormSkeleton } from "@/components/admin/AdminSkeleton";
 import Modal from "@/components/ui/Modal";
 import { showSuccess, showError } from "@/components/ui/Toast";
 import type { BannerType } from "@/types";
@@ -182,9 +182,7 @@ export default function AdminSettingsPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner size="lg" className="text-indigo-600" />
-        </div>
+        <FormSkeleton fields={6} />
       </AdminLayout>
     );
   }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { TableSkeleton } from "@/components/admin/AdminSkeleton";
 import StatusBadge from "@/components/ui/StatusBadge";
 import Modal from "@/components/ui/Modal";
 import { showSuccess, showError } from "@/components/ui/Toast";
@@ -139,9 +139,7 @@ export default function AdminCategoriesPage() {
 
         <div className="rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <LoadingSpinner size="lg" className="text-indigo-600" />
-            </div>
+            <TableSkeleton rows={5} columns={5} />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

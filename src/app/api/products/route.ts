@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db/prisma";
-import { slugify } from "@/lib/utils";
-import { requirePermission } from "@/lib/security/guard";
-import { productCreateSchema, formatZodError, toNumber, toInt } from "@/lib/security/validation";
-import { rateLimit, getClientIp } from "@/lib/security/rateLimit";
-
-function isUnauthed(result: unknown): result is NextResponse {
-  return result instanceof NextResponse;
-}
+import { getAdminSession } from "@/lib/security/session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,6 +16,9 @@ export async function GET(request: NextRequest) {
     const maxPrice = searchParams.get("maxPrice") || "";
     const sale = searchParams.get("sale") || "";
 
+    const session = await getAdminSession();
+    const isAdmin = !!session;
+
     const where: any = {};
 
     if (search) {
@@ -37,9 +33,9 @@ export async function GET(request: NextRequest) {
       where.category = { slug: category };
     }
 
-    if (status) {
+    if (status && isAdmin) {
       where.status = status;
-    } else {
+    } else if (!isAdmin) {
       where.status = "active";
     }
 
@@ -85,58 +81,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error("Products fetch error:", error?.message || error);
-    return NextResponse.json({ error: "Failed to fetch products", detail: error?.message }, { status: 500 });
-  }
-}
-
-export async function POST(request: NextRequest) {
-  const auth = await requirePermission("products:manage");
-  if (isUnauthed(auth)) return auth;
-
-  try {
-    const parsed = productCreateSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
-    }
-    const { name, description, price, salePrice, sku, barcode, stock, lowStockThreshold, images, status, isFeatured, categoryId, variants } = parsed.data;
-
-    const slug = slugify(name);
-    const existing = await prisma.product.findUnique({ where: { slug } });
-    const uniqueSlug = existing ? `${slug}-${Date.now()}` : slug;
-
-    const product = await prisma.product.create({
-      data: {
-        name,
-        slug: uniqueSlug,
-        description: description || null,
-        price: toNumber(price),
-        salePrice: salePrice ? toNumber(salePrice) : null,
-        sku: sku || null,
-        barcode: barcode || null,
-        stock: toInt(stock),
-        lowStockThreshold: toInt(lowStockThreshold, 5),
-        images: JSON.stringify(images || []),
-        status: status || "active",
-        isFeatured: isFeatured || false,
-        categoryId: categoryId || null,
-        variants: variants
-          ? {
-              create: variants.map((v: any) => ({
-                name: v.name,
-                value: v.value,
-                price: v.price ? toNumber(v.price) : null,
-                stock: toInt(v.stock),
-                sku: v.sku || null,
-              })),
-            }
-          : undefined,
-      },
-      include: { category: true, variants: true },
-    });
-
-    return NextResponse.json({ product }, { status: 201 });
-  } catch (error) {
-    console.error("Product create error:", error);
-    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

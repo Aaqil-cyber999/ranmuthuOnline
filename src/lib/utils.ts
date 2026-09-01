@@ -75,3 +75,12 @@ export function safeParseJSON<T>(value: string | null | undefined, fallback: T):
 export function parseProductImages(images: string | null | undefined): string[] {
   return safeParseJSON<string[]>(images, []);
 }
+
+export function normalizeSriLankanPhone(value: string): string | null {
+  const digits = value.replace(/[\s\-()+]/g, "");
+  const local = /^0?7\d{8}$/.test(digits) ? digits.replace(/^0/, "") : null;
+  const full = /^947\d{8}$/.test(digits) ? digits.replace(/^94/, "") : null;
+  const candidate = local ?? full;
+  if (!candidate) return null;
+  return `94${candidate}`;
+}

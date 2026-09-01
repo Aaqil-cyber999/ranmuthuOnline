@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -57,6 +57,7 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const submitRef = useRef(false);
 
   const subtotal = getSubtotal();
   const deliveryFee = subtotal >= FREE_DELIVERY_MIN ? 0 : DELIVERY_FEE;
@@ -100,8 +101,9 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate() || submitting) return;
+    if (!validate() || submitting || submitRef.current) return;
 
+    submitRef.current = true;
     setSubmitting(true);
     try {
       const res = await fetch("/api/orders", {
@@ -123,6 +125,7 @@ export default function CheckoutPage() {
 
       if (!res.ok || !data.order) {
         showError(data.error || "Could not place your order. Please try again.");
+        submitRef.current = false;
         setSubmitting(false);
         return;
       }
@@ -153,6 +156,7 @@ export default function CheckoutPage() {
       );
     } catch {
       showError("Could not place your order. Please check your connection and try again.");
+      submitRef.current = false;
       setSubmitting(false);
     }
   };

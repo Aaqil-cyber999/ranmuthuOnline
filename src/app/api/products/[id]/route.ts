@@ -14,6 +14,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+
     const product = await prisma.product.findFirst({
       where: {
         OR: [{ id }, { slug: id }],
@@ -28,7 +29,7 @@ export async function GET(
 
     return NextResponse.json({ product });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -98,7 +99,7 @@ export async function PUT(
     return NextResponse.json({ product });
   } catch (error) {
     console.error("Product update error:", error);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -130,7 +131,7 @@ export async function PATCH(
 
     return NextResponse.json({ product });
   } catch {
-    return NextResponse.json({ error: "Failed to update stock" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -156,6 +157,6 @@ export async function DELETE(
     await prisma.product.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatusBadge from "@/components/ui/StatusBadge";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { DashboardSkeleton } from "@/components/admin/AdminSkeleton";
 import type { DashboardStats, OrderType, ProductType } from "@/types";
 
 export default function AdminDashboardPage() {
@@ -39,9 +39,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner size="lg" className="text-indigo-600" />
-        </div>
+        <DashboardSkeleton />
       </AdminLayout>
     );
   }

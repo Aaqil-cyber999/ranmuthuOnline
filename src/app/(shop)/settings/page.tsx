@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { formatPrice } from "@/lib/utils";
 import { showError } from "@/components/ui/Toast";
@@ -107,7 +107,16 @@ function SectionIcon({ path, className = "h-4 w-4" }: { path: string; className?
 }
 
 export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { theme, toggleTheme } = useTheme();
   const [section, setSection] = useState<SectionKey>("orders");
   const [user, setUser] = useState<AccountUser | null>(null);
@@ -117,22 +126,46 @@ export default function SettingsPage() {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState("");
   const [lookedUp, setLookedUp] = useState(false);
-  const [order, setOrder] = useState<TrackedOrder | null>(null);
+  const [orders, setOrders] = useState<TrackedOrder[]>([]);
+  const [copiedTracking, setCopiedTracking] = useState<string | null>(null);
+  const [collapsedOrders, setCollapsedOrders] = useState<Set<string>>(new Set());
+
+  const toggleOrder = (orderNumber: string) => {
+    setCollapsedOrders((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderNumber)) next.delete(orderNumber);
+      else next.add(orderNumber);
+      return next;
+    });
+  };
+
+  const copyTracking = (tracking: string) => {
+    navigator.clipboard.writeText(tracking).then(() => {
+      setCopiedTracking(tracking);
+      setTimeout(() => setCopiedTracking(null), 2000);
+    }).catch(() => {});
+  };
+
+  const clearLookup = () => {
+    setTrackingInput("");
+    setOrders([]);
+    setLookedUp(false);
+    setLookupError("");
+    setCollapsedOrders(new Set());
+  };
+
+  const [trackInput, setTrackInput] = useState("");
+  const [trackLoading, setTrackLoading] = useState(false);
+  const [trackError, setTrackError] = useState("");
+  const [trackedOrder, setTrackedOrder] = useState<TrackedOrder | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const requested = params.get("section");
+    const requested = searchParams.get("section");
     if (requested && ["orders", "notifications", "appearance", "security", "support"].includes(requested)) {
       setSection(requested as SectionKey);
     }
-    const tracking = params.get("tracking");
-    if (tracking) {
-      const value = tracking.toUpperCase();
-      setTrackingInput(value);
-      runLookup(value);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -166,19 +199,19 @@ export default function SettingsPage() {
     setLookupError("");
     setLookupLoading(true);
     try {
-      const res = await fetch(`/api/orders/lookup?tracking=${encodeURIComponent(value.trim())}`);
+      const res = await fetch(`/api/orders/my-orders?phone=${encodeURIComponent(value.trim())}`);
       const data = await res.json();
       if (!res.ok) {
         setLookupError(data.error || "Something went wrong");
-        setOrder(null);
+        setOrders([]);
         setLookedUp(true);
       } else {
-        setOrder(data.order || null);
+        setOrders(data.orders || []);
         setLookedUp(true);
       }
     } catch {
       setLookupError("Could not reach the server. Please try again.");
-      setOrder(null);
+      setOrders([]);
     } finally {
       setLookupLoading(false);
     }
@@ -186,7 +219,55 @@ export default function SettingsPage() {
 
   const handleLookup = (e: React.FormEvent) => {
     e.preventDefault();
-    runLookup(trackingInput);
+    const value = trackingInput.trim();
+    if (!value) {
+      setLookupError("Please enter your phone number.");
+      setLookedUp(true);
+      setOrders([]);
+      return;
+    }
+    const cleaned = value.replace(/\s+/g, "").replace(/^0/, "94");
+    if (!/^\d{11,12}$/.test(cleaned)) {
+      setLookupError("Invalid phone number. Enter a valid Sri Lankan number (e.g. 077 956 0026).");
+      setLookedUp(true);
+      setOrders([]);
+      return;
+    }
+    runLookup(value);
+  };
+
+  const runTrack = async (value: string) => {
+    setTrackError("");
+    setTrackLoading(true);
+    setTrackedOrder(null);
+    try {
+      const res = await fetch(`/api/orders/lookup?tracking=${encodeURIComponent(value.trim())}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setTrackError(data.error || "Something went wrong");
+      } else {
+        setTrackedOrder(data.order || null);
+      }
+    } catch {
+      setTrackError("Could not reach the server. Please try again.");
+    } finally {
+      setTrackLoading(false);
+    }
+  };
+
+  const handleTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = trackInput.trim();
+    if (!value) {
+      setTrackError("Please enter your tracking number.");
+      return;
+    }
+    const cleaned = value.toUpperCase().replace(/\s+/g, "");
+    if (!/^RMX-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/.test(cleaned) && !/^RMX[A-HJ-NP-Z2-9]{8}$/.test(cleaned)) {
+      setTrackError("Invalid tracking number. It should look like RMX-7K4P-92QF (8 characters after RMX).");
+      return;
+    }
+    runTrack(value);
   };
 
   const roleLabel = user?.role === "OWNER" ? "Owner" : "Staff";
@@ -320,27 +401,43 @@ export default function SettingsPage() {
             {/* MY ORDERS */}
             {section === "orders" && (
               <div className="glass-card rounded-2xl p-5 sm:p-6">
-                <h2 className="text-base font-bold" style={{ color: "var(--fg)" }}>Track Your Order</h2>
+                <h2 className="text-base font-bold" style={{ color: "var(--fg)" }}>My Orders</h2>
                 <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--fg-muted)" }}>
-                  Enter the tracking number from your order confirmation (e.g. RMX-7K4P-92QF).
+                  Enter the phone number you used when placing your order.
                 </p>
 
                 <form onSubmit={handleLookup} className="mt-4 flex flex-col gap-2.5 sm:flex-row">
-                  <input
-                    type="text"
-                    value={trackingInput}
-                    onChange={(e) => setTrackingInput(e.target.value.toUpperCase())}
-                    placeholder="RMX-XXXX-XXXX"
-                    maxLength={13}
-                    className="input-field flex-1 font-mono tracking-wider uppercase"
-                    aria-label="Tracking number"
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      type="tel"
+                      value={trackingInput}
+                      onChange={(e) => setTrackingInput(e.target.value)}
+                      placeholder="077 956 0026"
+                      className="input-field w-full pr-10"
+                      aria-label="Phone number"
+                    />
+                    {trackingInput && (
+                      <button
+                        type="button"
+                        onClick={clearLookup}
+                        aria-label="Clear phone number and orders"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full transition-colors"
+                        style={{ color: "var(--fg-muted)", cursor: "pointer" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--border)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                   <button
                     type="submit"
                     disabled={lookupLoading}
                     className="btn-primary px-6 py-3 text-sm font-semibold disabled:opacity-50"
                   >
-                    {lookupLoading ? "Searching…" : "Track Order"}
+                    {lookupLoading ? "Searching…" : "Find Orders"}
                   </button>
                 </form>
 
@@ -350,25 +447,174 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                {lookedUp && !lookupError && order && (() => {
-                  const st = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
-                  const cancelled = order.status === "cancelled";
-                  const currentStep = statusStepIndex(order.status);
+                {lookedUp && !lookupError && orders.length === 0 && (
+                  <div className="mt-5 rounded-xl px-4 py-8 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                    <p className="text-sm font-medium" style={{ color: "var(--fg-muted)" }}>No orders found for this phone number.</p>
+                  </div>
+                )}
+
+                {lookedUp && !lookupError && orders.length > 0 && (
+                  <div className="mt-5 space-y-4">
+                    {orders.map((order) => {
+                      const cancelled = order.status === "cancelled";
+                      return (
+                        <div key={order.orderNumber} className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
+                          {/* Order header */}
+                          <div
+                            className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5"
+                            style={{ background: "var(--surface)" }}
+                          >
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--fg-muted)" }}>Order</p>
+                              <p className="text-sm font-bold" style={{ color: "var(--fg)" }}>{order.orderNumber}</p>
+                              {order.trackingNumber && (
+                                <button
+                                  type="button"
+                                  onClick={() => copyTracking(order.trackingNumber!)}
+                                  className="group mt-1 inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold"
+                                  style={{ color: "var(--brand)", cursor: "pointer" }}
+                                >
+                                  {order.trackingNumber}
+                                  <svg className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                                  </svg>
+                                  <span className="text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--fg-muted)" }}>
+                                    {copiedTracking === order.trackingNumber ? "Copied!" : "Copy"}
+                                  </span>
+                                </button>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-[11px]" style={{ color: "var(--fg-muted)" }}>
+                                {new Date(order.createdAt).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" })}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => toggleOrder(order.orderNumber)}
+                                aria-label={collapsedOrders.has(order.orderNumber) ? "Show order" : "Hide order"}
+                                className="flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+                                style={{ color: "var(--fg-muted)", border: "1px solid var(--border)", cursor: "pointer" }}
+                                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface-2, var(--surface))"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                              >
+                                {collapsedOrders.has(order.orderNumber) ? (
+                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                  </svg>
+                                ) : (
+                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          {!collapsedOrders.has(order.orderNumber) && (
+                            <>
+                              {cancelled && (
+                                <div className="px-4 py-3 text-xs font-medium text-red-400" style={{ borderTop: "1px solid var(--border)", background: "rgba(239,68,68,0.05)" }}>
+                                  This order was cancelled.
+                                </div>
+                              )}
+
+                              {/* Items + summary */}
+                              <div className="px-4 py-3" style={{ borderTop: "1px solid var(--border)" }}>
+                                <ul className="space-y-1">
+                                  {order.items.map((item, i) => (
+                                    <li key={`${item.name}-${i}`} className="flex items-baseline justify-between gap-3 text-xs">
+                                      <span style={{ color: "var(--fg)" }}>
+                                        {item.name}
+                                        {item.variant ? <span style={{ color: "var(--fg-muted)" }}> ({item.variant})</span> : null}
+                                        <span style={{ color: "var(--fg-muted)" }}> ×{item.quantity}</span>
+                                      </span>
+                                      <span className="flex-shrink-0 font-medium" style={{ color: "var(--fg-muted)" }}>{formatPrice(item.price * item.quantity)}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                                <div className="mt-2 flex justify-between pt-2 text-xs font-bold" style={{ borderTop: "1px solid var(--border)", color: "var(--fg)" }}>
+                                  <span>Total</span>
+                                  <span>{formatPrice(order.total)}</span>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TRACK ORDER */}
+            {section === "orders" && (
+              <div className="glass-card rounded-2xl p-5 sm:p-6">
+                <h2 className="text-base font-bold" style={{ color: "var(--fg)" }}>Track Your Order</h2>
+                <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--fg-muted)" }}>
+                  Enter the tracking number from your order confirmation (e.g. RMX-7K4P-92QF).
+                </p>
+
+                <form onSubmit={handleTrack} className="mt-4 flex flex-col gap-2.5 sm:flex-row">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={trackInput}
+                      onChange={(e) => setTrackInput(e.target.value.toUpperCase())}
+                      placeholder="RMX-XXXX-XXXX"
+                      maxLength={13}
+                      className="input-field w-full pr-10 font-mono tracking-wider uppercase"
+                      aria-label="Tracking number"
+                    />
+                    {trackInput && (
+                      <button
+                        type="button"
+                        onClick={() => setTrackInput("")}
+                        aria-label="Clear tracking number"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full transition-colors"
+                        style={{ color: "var(--fg-muted)", cursor: "pointer" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--border)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={trackLoading}
+                    className="btn-primary px-6 py-3 text-sm font-semibold disabled:opacity-50"
+                  >
+                    {trackLoading ? "Searching…" : "Track Order"}
+                  </button>
+                </form>
+
+                {trackError && (
+                  <div className="mt-4 rounded-xl px-4 py-3.5 text-xs font-medium text-red-400" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                    {trackError}
+                  </div>
+                )}
+
+                {trackedOrder && (() => {
+                  const st = STATUS_STYLES[trackedOrder.status] || STATUS_STYLES.pending;
+                  const cancelled = trackedOrder.status === "cancelled";
+                  const currentStep = statusStepIndex(trackedOrder.status);
                   return (
                     <div className="mt-5 space-y-4">
-                      {/* Header */}
                       <div
                         className="flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3.5"
                         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
                       >
                         <div>
                           <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--fg-muted)" }}>Tracking Number</p>
-                          <p className="font-mono text-lg font-bold text-brand-400">{order.trackingNumber}</p>
+                          <p className="font-mono text-lg font-bold text-brand-400">{trackedOrder.trackingNumber}</p>
                         </div>
                         <div className="text-right">
                           <span className={`inline-block rounded-full px-3 py-1 text-[11px] font-bold ${st.bg} ${st.text}`}>{st.label}</span>
                           <p className="mt-1 text-[11px]" style={{ color: "var(--fg-muted)" }}>
-                            Placed {new Date(order.createdAt).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" })}
+                            Placed {new Date(trackedOrder.createdAt).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" })}
                           </p>
                         </div>
                       </div>
@@ -416,11 +662,10 @@ export default function SettingsPage() {
                         </div>
                       )}
 
-                      {/* Items + summary */}
                       <div className="rounded-xl px-4 py-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                         <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--fg-muted)" }}>Items</p>
                         <ul className="mt-2 space-y-1.5">
-                          {order.items.map((item, i) => (
+                          {trackedOrder.items.map((item, i) => (
                             <li key={`${item.name}-${i}`} className="flex items-baseline justify-between gap-3 text-xs">
                               <span style={{ color: "var(--fg)" }}>
                                 {item.name}
@@ -434,21 +679,21 @@ export default function SettingsPage() {
                         <div className="mt-3 space-y-1 border-t pt-3 text-xs" style={{ borderColor: "var(--border)" }}>
                           <div className="flex justify-between" style={{ color: "var(--fg-muted)" }}>
                             <span>Subtotal</span>
-                            <span>{formatPrice(order.subtotal)}</span>
+                            <span>{formatPrice(trackedOrder.subtotal)}</span>
                           </div>
                           <div className="flex justify-between" style={{ color: "var(--fg-muted)" }}>
                             <span>Delivery</span>
-                            <span>{order.deliveryFee === 0 ? "Free" : formatPrice(order.deliveryFee)}</span>
+                            <span>{trackedOrder.deliveryFee === 0 ? "Free" : formatPrice(trackedOrder.deliveryFee)}</span>
                           </div>
                           <div className="flex justify-between pt-1 text-sm font-bold" style={{ color: "var(--fg)" }}>
                             <span>Total</span>
-                            <span>{formatPrice(order.total)}</span>
+                            <span>{formatPrice(trackedOrder.total)}</span>
                           </div>
                         </div>
-                        {order.customerAddress && (
+                        {trackedOrder.customerAddress && (
                           <div className="mt-3 border-t pt-3" style={{ borderColor: "var(--border)" }}>
                             <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--fg-muted)" }}>Deliver To</p>
-                            <p className="mt-1 text-xs" style={{ color: "var(--fg)" }}>{order.customerAddress}</p>
+                            <p className="mt-1 text-xs" style={{ color: "var(--fg)" }}>{trackedOrder.customerAddress}</p>
                           </div>
                         )}
                       </div>

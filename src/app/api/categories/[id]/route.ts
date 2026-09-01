@@ -25,7 +25,7 @@ export async function GET(
 
     return NextResponse.json({ category });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch category" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -89,6 +89,6 @@ export async function DELETE(
     await prisma.category.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

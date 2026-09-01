@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/admin/AdminLayout";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { FormSkeleton } from "@/components/admin/AdminSkeleton";
 import { showSuccess, showError } from "@/components/ui/Toast";
 import { parseProductImages } from "@/lib/utils";
 import type { CategoryType, ProductVariantType } from "@/types";
@@ -178,9 +179,7 @@ export default function AdminEditProductPage({ params }: { params: Promise<{ id:
   if (loadingProduct) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <LoadingSpinner size="lg" className="text-indigo-600" />
-        </div>
+        <FormSkeleton fields={6} />
       </AdminLayout>
     );
   }

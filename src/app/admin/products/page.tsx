@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatusBadge from "@/components/ui/StatusBadge";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { TableSkeleton } from "@/components/admin/AdminSkeleton";
 import Pagination from "@/components/ui/Pagination";
 import Modal from "@/components/ui/Modal";
 import { showSuccess, showError } from "@/components/ui/Toast";
@@ -160,9 +160,7 @@ export default function AdminProductsPage() {
 
         <div className="rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <LoadingSpinner size="lg" className="text-indigo-600" />
-            </div>
+            <TableSkeleton rows={6} columns={7} />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

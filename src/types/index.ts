@@ -1,3 +1,22 @@
+export interface WishlistItem {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  salePrice: number | null;
+  image: string;
+  stock: number;
+}
+
+export interface WishlistState {
+  items: WishlistItem[];
+  addItem: (item: WishlistItem) => void;
+  removeItem: (id: string) => void;
+  toggleItem: (item: WishlistItem) => void;
+  hasItem: (id: string) => boolean;
+  getItemCount: () => number;
+}
+
 export interface CartItem {
   id: string;
   name: string;

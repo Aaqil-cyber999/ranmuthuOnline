@@ -51,8 +51,13 @@ export function rateLimitByKey(key: string, opts?: { maxRequests?: number; windo
 
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
+  if (forwarded) {
+    const first = forwarded.split(",")[0].trim();
+    if (first && first !== "unknown") return first;
+  }
   const real = request.headers.get("x-real-ip");
-  if (real) return real;
+  if (real && real !== "unknown") return real;
+  const cfConnecting = request.headers.get("cf-connecting-ip");
+  if (cfConnecting && cfConnecting !== "unknown") return cfConnecting;
   return "unknown";
 }

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ProductType } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { showSuccess } from "@/components/ui/Toast";
 import ProductCard from "@/components/shop/ProductCard";
 
@@ -14,6 +15,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { addItem } = useCart();
+  const { toggleItem, hasItem } = useWishlist();
   const [product, setProduct] = useState<ProductType | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,6 +105,20 @@ export default function ProductDetailPage() {
     : 0;
   const inStock = product.stock > 0;
   const lowStock = inStock && product.stock <= 5;
+  const isWishlisted = hasItem(product.id);
+
+  const handleToggleWishlist = () => {
+    toggleItem({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      salePrice: product.salePrice,
+      image: images[0] || "/placeholder-product.png",
+      stock: product.stock,
+    });
+    showSuccess(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
+  };
 
   const handleAddToCart = () => {
     if (!inStock) return;
@@ -354,6 +370,19 @@ export default function ProductDetailPage() {
                   Buy Now
                 </button>
               </div>
+
+              <button
+                onClick={handleToggleWishlist}
+                className="flex w-full items-center justify-center gap-2 py-2.5 text-xs font-medium transition-colors rounded-xl"
+                style={{ color: isWishlisted ? "#ef4444" : "var(--fg-muted)", border: "1px solid var(--border)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <svg className="h-4 w-4" fill={isWishlisted ? "#ef4444" : "none"} viewBox="0 0 24 24" strokeWidth="1.5" stroke={isWishlisted ? "#ef4444" : "currentColor"}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+                {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+              </button>
 
               <Link
                 href="/"

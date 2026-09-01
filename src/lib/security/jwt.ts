@@ -1,13 +1,16 @@
 import { SignJWT, jwtVerify } from "jose";
 import { isAdminRole, type AdminRole } from "./permissions";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "default-secret-change-me"
-);
-
 if (!process.env.JWT_SECRET) {
-  console.warn("[AUTH] WARNING: JWT_SECRET env var is not set. Using insecure default. Set JWT_SECRET in production!");
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("[AUTH] FATAL: JWT_SECRET env var is not set. Authentication is disabled until this is configured.");
+  }
+  console.warn("[AUTH] WARNING: JWT_SECRET env var is not set. Using insecure dev default. Never deploy without setting JWT_SECRET!");
 }
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "default-dev-secret-do-not-use-in-production"
+);
 
 export const AUTH_COOKIE_NAME = "admin_token";
 export const SESSION_MAX_AGE = 60 * 60 * 24; // 24h

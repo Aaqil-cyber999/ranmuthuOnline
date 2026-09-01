@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,7 @@ const NAV_LINKS = [
 export default function Header({ onCartOpen }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { getItemCount } = useCart();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -118,18 +119,32 @@ export default function Header({ onCartOpen }: HeaderProps) {
 
           {/* Desktop nav links */}
           <nav className="hidden lg:flex items-center gap-1 ml-6" aria-label="Primary">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap"
-                style={{ color: "var(--fg-muted)" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--fg)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-muted)"; }}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive =
+                link.href === "/" ? pathname === "/" && !link.href.includes("sale")
+                : link.href.includes("#")
+                  ? false
+                  : pathname === "/" && link.href.includes("sale") && searchParams.get("sale") === "true";
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="relative rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap"
+                  style={{
+                    color: isActive ? "var(--fg)" : "var(--fg-muted)",
+                    background: isActive ? "var(--surface)" : undefined,
+                  }}
+                  aria-current={isActive ? "page" : undefined}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--surface)"; e.currentTarget.style.color = "var(--fg)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = isActive ? "var(--surface)" : "transparent"; e.currentTarget.style.color = isActive ? "var(--fg)" : "var(--fg-muted)"; }}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-brand-500" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Search bar — desktop */}

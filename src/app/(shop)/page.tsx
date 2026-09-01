@@ -196,27 +196,10 @@ function StorefrontContent() {
                 </div>
               </div>
 
-              {/* Right: Animated fancy items */}
+              {/* Right: brand visual */}
               <div className="hidden lg:flex items-center justify-center flex-1 relative h-48">
-                {/* Big teddy bear - main */}
-                <div className="absolute animate-float" style={{ animationDuration: "4s" }}>
-                  <div className="text-8xl drop-shadow-lg select-none">🧸</div>
-                </div>
-                {/* Ring - top right */}
-                <div className="absolute -top-2 right-4 animate-float" style={{ animationDuration: "3.5s", animationDelay: "0.5s" }}>
-                  <div className="text-4xl drop-shadow-md select-none">💍</div>
-                </div>
-                {/* Sparkle - bottom left */}
-                <div className="absolute bottom-0 left-0 animate-float" style={{ animationDuration: "5s", animationDelay: "1s" }}>
-                  <div className="text-3xl drop-shadow-md select-none">✨</div>
-                </div>
-                {/* Gift - top left */}
-                <div className="absolute -top-4 left-8 animate-float" style={{ animationDuration: "4.5s", animationDelay: "1.5s" }}>
-                  <div className="text-3xl drop-shadow-md select-none">🎁</div>
-                </div>
-                {/* Band - bottom right */}
-                <div className="absolute bottom-2 right-0 animate-float" style={{ animationDuration: "3.8s", animationDelay: "0.8s" }}>
-                  <div className="text-3xl drop-shadow-md select-none">🎀</div>
+                <div className="text-gradient text-8xl font-extrabold tracking-tight select-none drop-shadow-lg">
+                  RF
                 </div>
               </div>
             </div>
@@ -266,12 +249,13 @@ function StorefrontContent() {
               </div>
               <button
                 onClick={() => navigate({ sort: "newest" })}
-                className="text-xs font-medium transition-colors"
-                style={{ color: "var(--fg-muted)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--fg)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--fg-muted)")}
+                className="btn-secondary px-4 py-2 text-sm font-semibold"
+                aria-label="View all products"
               >
                 View all
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
               </button>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -370,7 +354,7 @@ function StorefrontContent() {
 
           <div className="flex gap-3">
             {/* Sidebar */}
-            <div className={`${showFilters ? "block" : "hidden"} w-full sm:block sm:w-52 flex-shrink-0`}>
+            <div className={`${showFilters ? "block" : "hidden"} w-full sm:block sm:w-44 flex-shrink-0`}>
               <div className="sticky top-24 space-y-5">
                 {/* Categories */}
                 <div>

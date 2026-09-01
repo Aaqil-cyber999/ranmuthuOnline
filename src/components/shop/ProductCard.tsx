@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { formatPrice } from "@/lib/utils";
 import { showSuccess } from "@/components/ui/Toast";
 
@@ -21,6 +22,8 @@ type ProductCardProps = {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { toggleItem, hasItem } = useWishlist();
+  const isWishlisted = hasItem(product.id);
 
   const images: string[] = (() => {
     try {
@@ -53,6 +56,21 @@ export default function ProductCard({ product }: ProductCardProps) {
     showSuccess(product.name + " added to cart");
   };
 
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleItem({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      salePrice: product.salePrice,
+      image: imageUrl,
+      stock: product.stock,
+    });
+    showSuccess(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
+  };
+
   return (
     <Link href={"/products/" + product.slug} className="group block">
       <div className="rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg"
@@ -73,6 +91,17 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
+          <button
+            onClick={handleToggleWishlist}
+            className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200"
+            style={{ background: "rgba(0,0,0,0.4)" }}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <svg className="h-3.5 w-3.5" fill={isWishlisted ? "#ef4444" : "none"} viewBox="0 0 24 24" strokeWidth="1.5" stroke={isWishlisted ? "#ef4444" : "white"}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+          </button>
+
           {product.stock < 1 && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
               <span className="rounded-lg px-3 py-1.5 text-xs font-medium text-white" style={{ background: "rgba(255,255,255,0.15)" }}>
@@ -80,17 +109,6 @@ export default function ProductCard({ product }: ProductCardProps) {
               </span>
             </div>
           )}
-
-          <button
-            onClick={handleAddToCart}
-            disabled={product.stock < 1}
-            className="absolute bottom-2 left-2 right-2 flex items-center justify-center gap-2 rounded-lg bg-brand-500 py-2 text-[11px] font-semibold text-white opacity-0 translate-y-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-brand-400 disabled:opacity-0 disabled:pointer-events-none"
-          >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Add to Cart
-          </button>
         </div>
 
         <div className="p-2 sm:p-3">
@@ -104,11 +122,23 @@ export default function ProductCard({ product }: ProductCardProps) {
           >
             {product.name}
           </h3>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xs sm:text-sm font-bold" style={{ color: "var(--fg)" }}>{formatPrice(displayPrice)}</span>
-            {hasDiscount && (
-              <span className="hidden text-[10px] line-through sm:inline" style={{ color: "var(--fg-faint)" }}>{formatPrice(product.price)}</span>
-            )}
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs sm:text-sm font-bold" style={{ color: "var(--fg)" }}>{formatPrice(displayPrice)}</span>
+              {hasDiscount && (
+                <span className="hidden text-[10px] line-through sm:inline" style={{ color: "var(--fg-faint)" }}>{formatPrice(product.price)}</span>
+              )}
+            </div>
+            <button
+              onClick={handleAddToCart}
+              disabled={product.stock < 1}
+              aria-label={`Add ${product.name} to cart`}
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white transition-colors hover:bg-brand-400 disabled:opacity-40 disabled:pointer-events-none"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
